@@ -10,17 +10,36 @@
   <script src="qunit/qunit.js"></script>
   <script src="message_channel_test.js"></script>
 
+  <button>Communicate</button>
   <script type="text/javascript">
-    window.addEventListener("message", connectMessageChannel, false);
-    function connectMessageChannel(event) {
-      if(event.origin !== "http://localhost:8001") {
-        return;
-      }
-      var t=document.createTextNode("CLICK ME");
-      document.body.appendChild(t);
+    var destinationUrl = "http://localhost:8001",
+        button = document.querySelector('button');
+    var loadHandler = function(){
+      // Define our message handler.
+      var messageHandler = function(messageEvent){
+        // Our form submission handler
+        var clickHandler = function(){
+          var msg = 'add <foo@example.com> to game circle.';
+          messageEvent.ports[0].postMessage(msg);
+        }
+        button.addEventListener('click',clickHandler,false);
 
-      event.source.postMessage('cool', "http://localhost:8001");
-    };
+        // Define our message event handler.
+        portMessageHandler = function(portMsgEvent){
+          var t = document.createTextNode(event.data);
+          document.body.appendChild(t);
+        }
+        // Set up our port event listener.
+        messageEvent.ports[0].addEventListener('message', portMessageHandler, false);
+        // Open the port
+        messageEvent.ports[0].start();
+      }
+
+
+      // Listen for the message from iframe[0]
+      window.addEventListener('message',messageHandler,false);
+    }
+    window.addEventListener('DOMContentLoaded',loadHandler,false);
   </script>
   <iframe id="iFrame" src="http://localhost:8001/tests/iframe.html">
   </iframe>

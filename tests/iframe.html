@@ -5,18 +5,33 @@
 </head>
 <body>
   <p>This is an iFrame</p>
+  <button>Communicate</button>
   <script type="text/javascript">
-    window.addEventListener("message", connectMessageChannel, false);
-    function connectMessageChannel(event) {
-      if(event.origin !== "http://localhost:8000") {
-        return;
+    var destinationUrl = "http://localhost:8000",
+        button = document.querySelector('button');
+    var loadHandler = function(){
+      var mc, portMessageHandler;
+      mc = new MessageChannel();
+
+      var clickHandler = function(){
+        var msg = 'Email added';
+        mc.port1.postMessage(msg);
       }
-      var t=document.createTextNode("BACK!");
-      document.body.appendChild(t);
-    };
-  </script>
-  <script type="text/javascript">
-    top.postMessage('hello', "http://localhost:8000");
+      button.addEventListener('click',clickHandler,false);
+
+      // Send a port to our parent document.
+      window.parent.postMessage('documentAHasLoaded', destinationUrl,[mc.port2]);
+      // Define our message event handler.
+      portMessageHandler = function(portMsgEvent){
+        var t = document.createTextNode(event.data);
+        document.body.appendChild(t);
+      }
+      // Set up our port event listener.
+      mc.port1.addEventListener('message', portMessageHandler, false);
+      // Open the port
+      mc.port1.start();
+    }
+    window.addEventListener('DOMContentLoaded', loadHandler, false);
   </script>
 </body>
 </html>
