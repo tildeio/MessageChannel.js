@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>iFrame</title>
+</head>
+<body>
+  <p>This is an iFrame</p>
+  <script type="text/javascript">
+    window.addEventListener("message", connectMessageChannel, false);
+    function connectMessageChannel(event) {
+      if(event.origin !== "http://localhost:8000") {
+        return;
+      }
+      var t=document.createTextNode("BACK!");
+      document.body.appendChild(t);
+    };
+  </script>
+  <script type="text/javascript">
+    top.postMessage('hello', "http://localhost:8000");
+  </script>
+</body>
+</html>
+

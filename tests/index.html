@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>QUnit Example</title>
+  <link rel="stylesheet" href="qunit/qunit.css">
+</head>
+<body>
+  <div id="qunit"></div>
+  <script src="qunit/qunit.js"></script>
+  <script src="message_channel_test.js"></script>
+
+  <script type="text/javascript">
+    window.addEventListener("message", connectMessageChannel, false);
+    function connectMessageChannel(event) {
+      if(event.origin !== "http://localhost:8001") {
+        return;
+      }
+      var t=document.createTextNode("CLICK ME");
+      document.body.appendChild(t);
+
+      event.source.postMessage('cool', "http://localhost:8001");
+    };
+  </script>
+  <iframe id="iFrame" src="http://localhost:8001/tests/iframe.html">
+  </iframe>
+</body>
+</html>
