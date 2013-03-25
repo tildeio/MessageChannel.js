@@ -34,11 +34,10 @@
           // Recreate the entangled ports
           for(var i=0; i< data.ports.length ; i++) {
             port = MessagePort.prototype.getPort( data.ports[i] );
-            console.log(i, port);
             ports.push(port);
 
             port.currentTarget = messageEvent.source;
-            port.destinationUrl = destinationUrl;
+            port.destinationUrl = messageEvent.origin;
 
             // Define our message event handler.
             port.addEventListener( function( data ) {
