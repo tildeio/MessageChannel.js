@@ -2,10 +2,10 @@ QUnit.module("MessageChannel");
 
 asyncTest("A message can be sent through a port and delivered to its entangled port", 1, function () {
   var mc = new MessageChannel();
-  // mc.port2.addEventListener('message', function(event) {
-    // equal("test", event.data, "We receive the correct message");
-    // start();
-  // }, false);
+  mc.port2.addEventListener('message', function(event) {
+    equal("test", event.data, "We receive the correct message");
+    start();
+  }, false);
   mc.port2.start();
   mc.port1.postMessage('test');
 });
