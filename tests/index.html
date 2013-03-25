@@ -65,7 +65,7 @@
         if( data['target']) {
           port = window.messagePorts[ data.target]
 
-          port.dispatchEvent( data.data );
+          port.enqueueEvent( data.data );
         }
       }
 
