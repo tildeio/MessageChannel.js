@@ -42,8 +42,11 @@
 
       // Set up our port event listener.
       mc.port1.addEventListener( function( data ) {
-        var t = document.createTextNode(data);
-        document.body.appendChild(t);
+        var li = document.createElement('li')
+            t = document.createTextNode( data ),
+            ul = document.querySelector('ul');
+        li.appendChild( t );
+        ul.appendChild( li );
       });
       // Open the port
       mc.port1.start();
@@ -69,6 +72,7 @@
 
     window.addEventListener('DOMContentLoaded', loadHandler, false);
   </script>
+  <div><ul></ul></div>
 </body>
 </html>
 

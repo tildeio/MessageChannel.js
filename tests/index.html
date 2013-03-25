@@ -33,11 +33,8 @@
         if( data['type'] === "documentAHasLoaded" ) {
           // Recreate the entangled ports
           for(var i=0; i< data.ports.length ; i++) {
-            port = MessagePort.prototype.getPort( data.ports[i] );
+            port = MessagePort.prototype.getPort( data.ports[i], messageEvent );
             ports.push(port);
-
-            port.currentTarget = messageEvent.source;
-            port.destinationUrl = messageEvent.origin;
 
             // Define our message event handler.
             port.addEventListener( function( data ) {
@@ -76,6 +73,6 @@
   </script>
   <iframe id="iFrame" src="http://localhost:8001/tests/iframe.html">
   </iframe>
-  <div id="incoming"><ul></ul></div>
+  <div><ul></ul></div>
 </body>
 </html>
