@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Sample Window</title>
+</head>
+<body>
+  <script src="../lib/uuid.core.js"></script>
+  <script src="../lib/kamino.js"></script>
+  <script src="../lib/message_channel.js"></script>
+
+  <button>Send to iframe</button>
+  <script type="text/javascript">
+    var destinationUrl = "http://localhost:8001",
+        button = document.querySelector('button');
+    var loadHandler = function(){
+      // Define our message handler.
+      var messageHandler = function(messageEvent){
+
+        if(messageEvent.origin !== destinationUrl) {
+          return;
+        }
+
+        var data = Kamino.parse( messageEvent.data ),
+            port,
+            ports = [];
+
+        // Retrieve the port
+        if( data['type'] === "documentAHasLoaded" ) {
+          // Recreate the entangled ports
+          for(var i=0; i< data.ports.length ; i++) {
+            port = MessagePort.prototype.getPort( data.ports[i], messageEvent );
+            ports.push(port);
+
+            // Define our message event handler.
+            port.addEventListener( function( data ) {
+              var li = document.createElement('li')
+                  t = document.createTextNode( data ),
+                  ul = document.querySelector('ul');
+              li.appendChild( t );
+              ul.appendChild( li );
+            });
+
+            // Open the port
+            port.start();
+          }
+
+          // Our form submission handler
+          var clickHandler = function(){
+            var msg = 'add <foo@example.com> to game circle.';
+            ports[0].postMessage(msg);
+          }
+          button.addEventListener('click',clickHandler,false);
+        }
+
+        // Retrieve the port
+        if( data['target']) {
+          port = window.messagePorts[ data.target]
+
+          port.enqueueEvent( data.data );
+        }
+      }
+
+
+      // Listen for the message from iframe[0]
+      window.addEventListener('message',messageHandler,false);
+    }
+    window.addEventListener('DOMContentLoaded',loadHandler,false);
+  </script>
+  <iframe id="iFrame" src="http://localhost:8001/tests/sample_iframe.html">
+  </iframe>
+  <div><ul></ul></div>
+</body>
+</html>
