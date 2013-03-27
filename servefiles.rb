@@ -12,18 +12,28 @@ s = HTTPServer.new(
   :Port            => port,
   :DocumentRoot    => dir
 )
-iframe_server = HTTPServer.new(
+iframe_source_server = HTTPServer.new(
   :Port            => port + 1,
+  :DocumentRoot    => dir
+)
+
+iframe_destination_server = HTTPServer.new(
+  :Port            => port + 2,
   :DocumentRoot    => dir
 )
 
 trap("INT") do
   s.shutdown
-  iframe_server.shutdown
+  iframe_source_server.shutdown
+  iframe_destination_server.shutdown
 end
 
 fork do
-  iframe_server.start
+  iframe_source_server.start
+end
+
+fork do
+  iframe_destination_server.start
 end
 
 s.start

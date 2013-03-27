@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>iFrame</title>
+  <script src="../../lib/uuid.core.js"></script>
+  <script src="../../lib/kamino.js"></script>
+  <script src="../../lib/message_channel.js"></script>
+</head>
+<body>
+  <script type="text/javascript">
+    var destinationUrl = "http://localhost:8002";
+    var loadHandler = function(){
+      // Define our message handler.
+      var messageHandler = function(messageEvent){
+
+        if(messageEvent.origin !== destinationUrl) {
+          return;
+        }
+
+        var data = Kamino.parse( messageEvent.data ),
+            port,
+            ports = [];
+
+        // Retrieve the port
+        if( data['type'] === "documentAHasLoaded" ) {
+          // Recreate the entangled ports
+          for(var i=0; i< data.ports.length ; i++) {
+            port = MessagePort.prototype.getPort( data.ports[i], messageEvent );
+            ports.push(port);
+          }
+
+          var li = document.createElement('li')
+              t = document.createTextNode( 'Port received' ),
+              ul = document.querySelector('ul');
+          li.appendChild( t );
+          ul.appendChild( li );
+
+          port = ports[0];
+          port.postMessage('Communication established');
+        }
+      }
+
+      // Listen for the message from iframe[0]
+      window.addEventListener('message',messageHandler,false);
+    }
+    window.addEventListener('DOMContentLoaded',loadHandler,false);
+  </script>
+
+  <iframe src="http://localhost:8002/tests/fixtures/message_delivery_source.html"></iframe>
+  <ul></ul>
+</body>
+</html>
