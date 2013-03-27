@@ -95,7 +95,7 @@ test("When the port isn't entangled, nothing is sent", function() {
   mp.postMessage( 'Sad things are sad' );
 });
 
-test("When the port is entangled, stringified data is sent to the entangled", function() {
+test("When the port is entangled, stringified data is sent to the entangled port", function() {
   expect(2);
   var mp1 = MessageChannel.createPort(),
       mp2 = MessageChannel.createPort('myUuid'),
@@ -124,18 +124,18 @@ QUnit.module("MessagePort - EventTarget", {
 test("Muliple listeners can be added to a message port", function() {
   var mp = MessageChannel.createPort();
 
-  equal(mp._listeners.length, 0, "A message port has no listeners by default");
-  mp.addEventListener( function() { });
-  mp.addEventListener( function() { });
+  deepEqual(mp._listeners, {}, "A message port has no listeners by default");
+  mp.addEventListener( 'message', function() { });
+  mp.addEventListener( 'message',  function() { });
 
-  equal(mp._listeners.length, 2, "A message port can have listeners");
+  equal(mp._listeners['message'].length, 2, "A message port can have listeners");
 });
 
 test("Events can be dispatched to event listeners", function() {
   expect(1);
   var mp = MessageChannel.createPort();
 
-  mp.addEventListener( function( data ) {
+  mp.addEventListener( 'message', function( data ) {
     equal(data, "I hear you", "The event listener is called with the event");
   });
 
@@ -155,10 +155,10 @@ test("A listener can be removed", function() {
         ok(true, "An added listener should be called");
       };
 
-  mp.addEventListener( listener1 );
-  mp.addEventListener( listener2 );
-  mp.addEventListener( listener3 );
+  mp.addEventListener( 'message', listener1 );
+  mp.addEventListener( 'message', listener2 );
+  mp.addEventListener( 'message', listener3 );
 
-  mp.removeEventListener( listener2 );
+  mp.removeEventListener( 'message', listener2 );
   mp.dispatchEvent( "I hear you" );
 });
