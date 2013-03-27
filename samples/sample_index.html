@@ -11,7 +11,7 @@
 
   <button>Send to iframe</button>
   <script type="text/javascript">
-    var destinationUrl = "http://localhost:8001",
+    var destinationUrl = window.location.protocol + "//" + window.location.hostname + ":" + (parseInt(window.location.port) + 1),
         button = document.querySelector('button');
     var loadHandler = function(){
       // Define our message handler.
@@ -66,9 +66,11 @@
       window.addEventListener('message',messageHandler,false);
     }
     window.addEventListener('DOMContentLoaded',loadHandler,false);
+
+    var iframe = document.createElement('iframe');
+    iframe.setAttribute("src", destinationUrl + "/samples/sample_iframe.html");
+    document.body.appendChild( iframe );
   </script>
-  <iframe id="iFrame" src="http://localhost:8001/tests/sample_iframe.html">
-  </iframe>
   <div><ul></ul></div>
 </body>
 </html>

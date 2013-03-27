@@ -10,7 +10,7 @@
   <button id="hello">Send "Hello" to top window</button>
   <button id="yt">Send "yt" to top window</button>
   <script type="text/javascript">
-    var destinationUrl = "http://localhost:8000",
+    var destinationUrl = window.location.protocol + "//" + window.location.hostname + ":" + (parseInt(window.location.port) - 1),
         buttonHello = document.querySelector('#hello'),
         buttonYt = document.querySelector('#yt');
     var loadHandler = function(){
