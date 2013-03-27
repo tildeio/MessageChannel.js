@@ -41,7 +41,7 @@
       mcYt.port1.destinationUrl = destinationUrl;
 
       // Set up our port event listener.
-      mc.port1.addEventListener( function( data ) {
+      mc.port1.addEventListener( 'message', function( data ) {
         var li = document.createElement('li')
             t = document.createTextNode( data ),
             ul = document.querySelector('ul');

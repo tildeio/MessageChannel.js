@@ -33,7 +33,7 @@
             ports.push(port);
 
             // Define our message event handler.
-            port.addEventListener( function( data ) {
+            port.addEventListener( 'message', function( data ) {
               var li = document.createElement('li')
                   t = document.createTextNode( data ),
                   ul = document.querySelector('ul');
