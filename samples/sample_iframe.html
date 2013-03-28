@@ -50,16 +50,9 @@
           return;
         }
 
-        var data = Kamino.parse( messageEvent.data ),
-            port;
+        var fakeEvent = MessageChannel.decodeEvent( messageEvent );
 
-        // Retrieve the port
-        if( data['target']) {
-          // Recreate the entangled ports
-          port = window.messagePorts[ data.target]
-
-          port.dispatchEvent( data.data );
-        }
+        MessageChannel.propagateEvent( fakeEvent );
       };
       window.addEventListener('message',messageHandler,false);
     }
