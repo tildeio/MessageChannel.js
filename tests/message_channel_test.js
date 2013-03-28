@@ -98,8 +98,7 @@ test("When the port isn't entangled, nothing is sent", function() {
 test("When the port is entangled, stringified data is sent to the entangled port", function() {
   expect(2);
   var mp1 = MessageChannel.createPort(),
-      mp2 = MessageChannel.createPort('myUuid'),
-      originalPostMessage = window.postMessage;
+      mp2 = MessageChannel.createPort('myUuid');
 
   mp1._entangledPort = mp2;
   // this is sad to have to do this
@@ -111,8 +110,6 @@ test("When the port is entangled, stringified data is sent to the entangled port
     equal(targetOrigin, "http://itworksforme", "The message is sent to the right url");
   };
   mp1.postMessage( 'Sad things are sad' );
-
-  window.postMessage = originalPostMessage;
 });
 
 test("When setting the `onmessage` event handler, it dispatches all pending events", function() {
