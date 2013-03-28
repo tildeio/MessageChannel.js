@@ -4,6 +4,7 @@
   <title>Sample iFrame</title>
 </head>
 <body>
+  <script src="../lib/jquery-1.9.1.min.js"></script>
   <script src="../lib/uuid.core.js"></script>
   <script src="../lib/kamino.js"></script>
   <script src="../lib/message_channel.js"></script>
@@ -23,13 +24,21 @@
         var msg = 'Hello';
         mc.port1.postMessage(msg);
       }
-      buttonHello.addEventListener('click',clickHandler,false);
+      if( buttonHello.addEventListener ) {
+        buttonHello.addEventListener('click',clickHandler,false);
+      } else {
+        buttonHello.attachEvent('onclick',clickHandler);
+      }
 
       var clickYtHandler = function(){
         var msg = 'yt';
         mcYt.port1.postMessage(msg);
       }
-      buttonYt.addEventListener('click',clickYtHandler,false);
+      if( buttonYt.addEventListener ) {
+        buttonYt.addEventListener('click',clickYtHandler,false);
+      } else {
+        buttonYt.attachEvent('onclick',clickYtHandler);
+      }
 
       // Send a port to our parent document.
       MessageChannel.postMessagePorts( window.parent, 'documentAHasLoaded', destinationUrl, [mc.port2, mcYt.port2]);
@@ -54,10 +63,14 @@
 
         MessageChannel.propagateEvent( fakeEvent );
       };
-      window.addEventListener('message',messageHandler,false);
+      if( window.addEventListener ) {
+        window.addEventListener('message', messageHandler, false);
+      } else {
+        window.attachEvent('onmessage', messageHandler);
+      }
     }
 
-    window.addEventListener('DOMContentLoaded', loadHandler, false);
+    $(document).ready( loadHandler );
   </script>
   <div><ul></ul></div>
 </body>

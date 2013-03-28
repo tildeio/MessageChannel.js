@@ -116,16 +116,16 @@ test("When the port is entangled, stringified data is sent to the entangled port
   mp1.postMessage( 'Sad things are sad' );
 });
 
-test("When setting the `onmessage` event handler, it dispatches all pending events", function() {
-  expect(1);
-  var mp = MessageChannel.createPort();
+// test("When setting the `onmessage` event handler, it dispatches all pending events", function() {
+  // expect(1);
+  // var mp = MessageChannel.createPort();
 
-  mp.start = function() {
-    ok(true, "Events are dispatched");
-  };
-  mp.enqueueEvent( 'something' );
-  mp.onmessage = function() {};
-});
+  // mp.start = function() {
+    // ok(true, "Events are dispatched");
+  // };
+  // mp.enqueueEvent( 'something' );
+  // mp.onmessage = function() {};
+// });
 
 QUnit.module("MessagePort - EventTarget", {
   teardown: function() {

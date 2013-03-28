@@ -5,6 +5,7 @@
   <title>Sample Window</title>
 </head>
 <body>
+  <script src="../lib/jquery-1.9.1.min.js"></script>
   <script src="../lib/uuid.core.js"></script>
   <script src="../lib/kamino.js"></script>
   <script src="../lib/message_channel.js"></script>
@@ -46,20 +47,29 @@
             var msg = 'add <foo@example.com> to game circle.';
             ports[0].postMessage(msg);
           }
-          button.addEventListener('click',clickHandler,false);
+          if( button.addEventListener ) {
+            button.addEventListener('click',clickHandler,false);
+          } else {
+            button.attachEvent('onclick',clickHandler);
+          }
         }
 
         MessageChannel.propagateEvent( fakeEvent );
       }
 
       // Listen for the message from iframe[0]
-      window.addEventListener('message', messageHandler, false);
+      if( window.addEventListener ) {
+        window.addEventListener('message', messageHandler, false);
+      } else {
+        window.attachEvent('onmessage', messageHandler);
+      }
     }
-    window.addEventListener('DOMContentLoaded', loadHandler, false);
 
     var iframe = document.createElement('iframe');
     iframe.setAttribute("src", destinationUrl + "/samples/sample_iframe.html");
     document.body.appendChild( iframe );
+
+    $(document).ready( loadHandler );
   </script>
   <div><ul></ul></div>
 </body>
