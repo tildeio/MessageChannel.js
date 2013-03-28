@@ -49,12 +49,7 @@
           button.addEventListener('click',clickHandler,false);
         }
 
-        // Retrieve the port
-        if( fakeEvent.data['target']) {
-          port = window.messagePorts[ fakeEvent.data.target];
-
-          port.enqueueEvent( fakeEvent.data.data );
-        }
+        MessageChannel.propagateEvent( fakeEvent );
       }
 
       // Listen for the message from iframe[0]

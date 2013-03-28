@@ -32,13 +32,7 @@
       buttonYt.addEventListener('click',clickYtHandler,false);
 
       // Send a port to our parent document.
-      var data = Kamino.stringify( {type: 'documentAHasLoaded', ports: [mc.port2, mcYt.port2]} );
-      window.parent.postMessage(data, destinationUrl);
-
-      mc.port1.currentTarget = window.parent;
-      mc.port1.destinationUrl = destinationUrl;
-      mcYt.port1.currentTarget = window.parent;
-      mcYt.port1.destinationUrl = destinationUrl;
+      MessageChannel.postMessagePorts( window.parent, 'documentAHasLoaded', destinationUrl, [mc.port2, mcYt.port2]);
 
       // Set up our port event listener.
       mc.port1.addEventListener( 'message', function( data ) {
