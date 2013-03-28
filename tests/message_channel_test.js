@@ -11,8 +11,8 @@ test("Assert not file://", function() {
 test("MessageChannel() creates 2 entangled ports", function() {
   var mc = MessageChannel();
 
-  equal( mc.port1, mc.port2.getEntangledPort(), "The port 1 is the enatngled port of port 2");
-  equal( mc.port2, mc.port1.getEntangledPort(), "The port 2 is the enatngled port of port 1");
+  equal( mc.port1, mc.port2._getEntangledPort(), "The port 1 is the enatngled port of port 2");
+  equal( mc.port2, mc.port1._getEntangledPort(), "The port 2 is the enatngled port of port 1");
 });
 
 QUnit.module("MessagePort", {
