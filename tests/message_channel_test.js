@@ -115,6 +115,17 @@ test("When the port is entangled, stringified data is sent to the entangled port
   window.postMessage = originalPostMessage;
 });
 
+test("When setting the `onmessage` event handler, it dispatches all pending events", function() {
+  expect(1);
+  var mp = MessageChannel.createPort();
+
+  mp.start = function() {
+    ok(true, "Events are dispatched");
+  };
+  mp.enqueueEvent( 'something' );
+  mp.onmessage = function() {};
+});
+
 QUnit.module("MessagePort - EventTarget", {
   teardown: function() {
     MessageChannel.reset();
@@ -138,6 +149,13 @@ test("Events can be dispatched to event listeners", function() {
   mp.addEventListener( 'message', function( data ) {
     equal(data, "I hear you", "The event listener is called with the event");
   });
+
+  mp.dispatchEvent( "I hear you" );
+});
+
+test("When no listeners have been set, dispatchEvent does nothing", function() {
+  expect(0);
+  var mp = MessageChannel.createPort();
 
   mp.dispatchEvent( "I hear you" );
 });
