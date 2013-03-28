@@ -21,19 +21,15 @@
           return;
         }
 
-        var data = Kamino.parse( messageEvent.data ),
-            port,
-            ports = [];
+        var fakeEvent = MessageChannel.decodeEvent( messageEvent );
 
         // Retrieve the port
-        if( data['type'] === "documentAHasLoaded" ) {
-          // Recreate the entangled ports
-          for(var i=0; i< data.ports.length ; i++) {
-            port = MessagePort.prototype.getPort( data.ports[i], messageEvent );
-            ports.push(port);
+        if( fakeEvent.type === "documentAHasLoaded" ) {
+          var ports = fakeEvent.ports;
 
+          for(var i=0 ; i<ports.length ; i++) {
             // Define our message event handler.
-            port.addEventListener( 'message', function( data ) {
+            ports[i].addEventListener( 'message', function( data ) {
               var li = document.createElement('li')
                   t = document.createTextNode( data ),
                   ul = document.querySelector('ul');
@@ -42,7 +38,7 @@
             });
 
             // Open the port
-            port.start();
+            ports[i].start();
           }
 
           // Our form submission handler
@@ -54,18 +50,17 @@
         }
 
         // Retrieve the port
-        if( data['target']) {
-          port = window.messagePorts[ data.target]
+        if( fakeEvent.data['target']) {
+          port = window.messagePorts[ fakeEvent.data.target];
 
-          port.enqueueEvent( data.data );
+          port.enqueueEvent( fakeEvent.data.data );
         }
       }
 
-
       // Listen for the message from iframe[0]
-      window.addEventListener('message',messageHandler,false);
+      window.addEventListener('message', messageHandler, false);
     }
-    window.addEventListener('DOMContentLoaded',loadHandler,false);
+    window.addEventListener('DOMContentLoaded', loadHandler, false);
 
     var iframe = document.createElement('iframe');
     iframe.setAttribute("src", destinationUrl + "/samples/sample_iframe.html");
