@@ -66,7 +66,7 @@ test("When the port isn't opened, the events are queued", function() {
     ok(false, "dispatchEvent should not be called");
   };
 
-  mp.enqueueEvent( 'something' );
+  mp._enqueueEvent( 'something' );
 
   equal(mp._messageQueue.length, 1, "The message is queued");
 });
@@ -80,7 +80,7 @@ test("When the port is opened, the events are dispatched", function() {
   };
 
   mp.start();
-  mp.enqueueEvent( 'something' );
+  mp._enqueueEvent( 'something' );
 
   equal(mp._messageQueue.length, 0, "The message is not queued");
 });
@@ -123,7 +123,7 @@ test("When the port is entangled, stringified data is sent to the entangled port
   // mp.start = function() {
     // ok(true, "Events are dispatched");
   // };
-  // mp.enqueueEvent( 'something' );
+  // mp._enqueueEvent( 'something' );
   // mp.onmessage = function() {};
 // });
 
