@@ -35,9 +35,9 @@
       MessageChannel.postMessagePorts( window.parent, 'documentAHasLoaded', destinationUrl, [mc.port2, mcYt.port2]);
 
       // Set up our port event listener.
-      mc.port1.addEventListener( 'message', function( data ) {
+      mc.port1.addEventListener( 'message', function( event ) {
         var li = document.createElement('li')
-            t = document.createTextNode( data ),
+            t = document.createTextNode( event.data ),
             ul = document.querySelector('ul');
         li.appendChild( t );
         ul.appendChild( li );

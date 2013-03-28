@@ -11,8 +11,8 @@ test("Assert not file://", function() {
 test("MessageChannel() creates 2 entangled ports", function() {
   var mc = MessageChannel();
 
-  equal( mc.port1, mc.port2._entangledPort, "The port 1 is the enatngled port of port 2");
-  equal( mc.port2, mc.port1._entangledPort, "The port 2 is the enatngled port of port 1");
+  equal( mc.port1, mc.port2.getEntangledPort(), "The port 1 is the enatngled port of port 2");
+  equal( mc.port2, mc.port1.getEntangledPort(), "The port 2 is the enatngled port of port 1");
 });
 
 QUnit.module("MessagePort", {
@@ -100,13 +100,17 @@ test("When the port is entangled, stringified data is sent to the entangled port
   var mp1 = MessageChannel.createPort(),
       mp2 = MessageChannel.createPort('myUuid');
 
-  mp1._entangledPort = mp2;
+  mp1._entangledPortUuid = mp2.uuid;
   // this is sad to have to do this
-  mp1.currentTarget = window;
+  mp1.setCurrentTarget( window );
   mp1.destinationUrl = "http://itworksforme";
 
+  Kamino.stringify = function() {
+    return 'an encoded string';
+  };
+
   window.postMessage = function( message, targetOrigin) {
-    equal(message, "{\"target\":\"myUuid\",\"data\":\"Sad things are sad\"}", "The message is encoded");
+    equal(message, "an encoded string", "The message is encoded");
     equal(targetOrigin, "http://itworksforme", "The message is sent to the right url");
   };
   mp1.postMessage( 'Sad things are sad' );
