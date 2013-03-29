@@ -9,7 +9,7 @@ test("Assert not file://", function() {
 });
 
 test("MessageChannel() creates 2 entangled ports", function() {
-  var mc = MessageChannel();
+  var mc = new MessageChannel();
 
   equal( mc.port1, mc.port2._getEntangledPort(), "The port 1 is the enatngled port of port 2");
   equal( mc.port2, mc.port1._getEntangledPort(), "The port 2 is the enatngled port of port 1");
@@ -26,14 +26,14 @@ test("A MessagePort object registers itself to the user agent based on its uuid"
 
   deepEqual( window.messagePorts, {}, "The message ports map is initially empty" );
 
-  mp = MessageChannel.createPort();
+  mp = MessageChannel._createPort();
 
   equal( window.messagePorts[mp.uuid], mp, "The message port is registered");
 });
 
 test("A MessagePort has a default uuid", function() {
   expect(2);
-  var mp = MessageChannel.createPort();
+  var mp = MessageChannel._createPort();
 
   equal(mp.uuid.constructor, String, "A MessagePort has a uuid as a string");
   notEqual(mp.uuid, "", "A MessagePort has a uuid as a non empty string");
@@ -41,7 +41,7 @@ test("A MessagePort has a default uuid", function() {
 
 test("A MessagePort can be initialized with a uuid", function() {
   expect(2);
-  var mp = MessageChannel.createPort("myUuid");
+  var mp = MessageChannel._createPort("myUuid");
 
   equal(mp.uuid.constructor, String, "A MessagePort has a uuid as a string");
   equal(mp.uuid, "myUuid", "A MessagePort be initialized with an Uuid");
@@ -49,7 +49,7 @@ test("A MessagePort can be initialized with a uuid", function() {
 
 test("Starting the port dispatches the stored messages in the queue", function() {
   expect(2);
-  var mp = MessageChannel.createPort();
+  var mp = MessageChannel._createPort();
   mp._messageQueue.push("a", "b");
   mp.dispatchEvent = function() {
     ok(true, "dispatchEvent is called when starting the communication on the port");
@@ -60,7 +60,7 @@ test("Starting the port dispatches the stored messages in the queue", function()
 
 test("When the port isn't opened, the events are queued", function() {
   expect(1);
-  var mp = MessageChannel.createPort();
+  var mp = MessageChannel._createPort();
 
   mp.dispatchEvent = function() {
     ok(false, "dispatchEvent should not be called");
@@ -73,7 +73,7 @@ test("When the port isn't opened, the events are queued", function() {
 
 test("When the port is opened, the events are dispatched", function() {
   expect(2);
-  var mp = MessageChannel.createPort();
+  var mp = MessageChannel._createPort();
 
   mp.dispatchEvent = function() {
     ok(true, "dispatchEvent should be called");
@@ -87,7 +87,7 @@ test("When the port is opened, the events are dispatched", function() {
 
 test("When the port isn't entangled, nothing is sent", function() {
   expect(0);
-  var mp = MessageChannel.createPort();
+  var mp = MessageChannel._createPort();
   mp.start();
   window.postMessage = function() {
     ok(false, "window.postMessage should not be called");
@@ -97,8 +97,8 @@ test("When the port isn't entangled, nothing is sent", function() {
 
 test("When the port is entangled, stringified data is sent to the entangled port", function() {
   expect(2);
-  var mp1 = MessageChannel.createPort(),
-      mp2 = MessageChannel.createPort('myUuid');
+  var mp1 = MessageChannel._createPort(),
+      mp2 = MessageChannel._createPort('myUuid');
 
   mp1._entangledPortUuid = mp2.uuid;
   // this is sad to have to do this
@@ -118,7 +118,7 @@ test("When the port is entangled, stringified data is sent to the entangled port
 
 // test("When setting the `onmessage` event handler, it dispatches all pending events", function() {
   // expect(1);
-  // var mp = MessageChannel.createPort();
+  // var mp = MessageChannel._createPort();
 
   // mp.start = function() {
     // ok(true, "Events are dispatched");
@@ -134,7 +134,7 @@ QUnit.module("MessagePort - EventTarget", {
 });
 
 test("Muliple listeners can be added to a message port", function() {
-  var mp = MessageChannel.createPort();
+  var mp = MessageChannel._createPort();
 
   deepEqual(mp._listeners, {}, "A message port has no listeners by default");
   mp.addEventListener( 'message', function() { });
@@ -145,7 +145,7 @@ test("Muliple listeners can be added to a message port", function() {
 
 test("Events can be dispatched to event listeners", function() {
   expect(1);
-  var mp = MessageChannel.createPort();
+  var mp = MessageChannel._createPort();
 
   mp.addEventListener( 'message', function( data ) {
     equal(data, "I hear you", "The event listener is called with the event");
@@ -156,14 +156,14 @@ test("Events can be dispatched to event listeners", function() {
 
 test("When no listeners have been set, dispatchEvent does nothing", function() {
   expect(0);
-  var mp = MessageChannel.createPort();
+  var mp = MessageChannel._createPort();
 
   mp.dispatchEvent( "I hear you" );
 });
 
 test("A listener can be removed", function() {
   expect(2);
-  var mp = MessageChannel.createPort(),
+  var mp = MessageChannel._createPort(),
       listener1 = function() {
         ok(true, "An added listener should be called");
       },

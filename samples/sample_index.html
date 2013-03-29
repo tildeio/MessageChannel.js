@@ -30,16 +30,13 @@
 
           for(var i=0 ; i<ports.length ; i++) {
             // Define our message event handler.
-            ports[i].addEventListener( 'message', function( event ) {
+            ports[i].setOnMessage( function( event ) {
               var li = document.createElement('li')
                   t = document.createTextNode( event.data ),
                   ul = document.querySelector('ul');
               li.appendChild( t );
               ul.appendChild( li );
             });
-
-            // Open the port
-            ports[i].start();
           }
 
           // Our form submission handler
