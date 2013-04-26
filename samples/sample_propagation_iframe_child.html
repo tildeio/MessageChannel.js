@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Sample iFrame</title>
+</head>
+<body>
+  <script src="../lib/jquery-1.9.1.min.js"></script>
+  <script type="text/javascript">
+    var destinationUrl = window.location.protocol + "//" + window.location.hostname + ":" + (parseInt(window.location.port) - 1);
+    var printMessage = function( text ) {
+      var li = document.createElement('li')
+          t = document.createTextNode( event.data ),
+          ul = document.querySelector('ul');
+      li.appendChild( t );
+      ul.appendChild( li );
+    };
+    var loadHandler = function(){
+      var mc,
+      mc = new MessageChannel();
+
+      // Send a port to our parent document.
+      window.parent.postMessage( 'childHasLoaded', destinationUrl, [mc.port2]);
+
+      // Set up our port event listener.
+      mc.port1.addEventListener( 'message', function( event ) {
+        printMessage( event.data );
+      });
+      // Open the port
+      mc.port1.start();
+    }
+
+    $(document).ready( loadHandler );
+  </script>
+  <div><ul></ul></div>
+</body>
+</html>
