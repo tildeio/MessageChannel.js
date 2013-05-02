@@ -181,3 +181,7 @@ test("A listener can be removed", function() {
   mp.removeEventListener( 'message', listener2 );
   mp.dispatchEvent( "I hear you" );
 });
+
+test("A port that has been passed through can't be sent again", function() {
+  ok(false, "when sent, a port is neutered. When trying to sent it again, it should raise an exception");
+});
