@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Child iFrame</title>
+  <script src="../../lib/uuid.core.js"></script>
+  <script src="../../lib/kamino.js"></script>
+  <script src="../../lib/message_channel.js"></script>
+</head>
+<body>
+  <script type="text/javascript">
+    var loadHandler = function( event ) {
+      window.addEventListener( 'message', function( event ) {
+        var messageEvent = MessageChannel.decodeEvent( event );
+
+        if( messageEvent.data.openCommunication ) {
+          messageEvent.ports[0].postMessage( 'Copy that' );
+        } else {
+          MessageChannel.propagateEvent( messageEvent );
+        }
+      });
+
+      Window.postMessage( window.parent, {childFrameLoaded: true}, "*" );
+    };
+
+    window.addEventListener('DOMContentLoaded', loadHandler, false);
+  </script>
+  <ul></ul>
+</body>
+</html>
+

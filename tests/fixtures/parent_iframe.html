@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Parent iFrame</title>
+  <script src="../../lib/uuid.core.js"></script>
+  <script src="../../lib/kamino.js"></script>
+  <script src="../../lib/message_channel.js"></script>
+</head>
+<body>
+  <script type="text/javascript">
+    var childFrame = document.createElement('iframe');
+    childFrame.setAttribute('src', "http://localhost:8002/tests/fixtures/child_iframe.html");
+
+    var loadHandler = function( event ) {
+      window.addEventListener( 'message', function( event ) {
+        var messageEvent = MessageChannel.decodeEvent( event );
+
+        if( messageEvent.data.childFrameLoaded ) {
+          Window.postMessage( window.parent, {childFrameLoaded: true}, "*" );
+        } else if( messageEvent.data.openCommunication ) {
+          Window.postMessage( childFrame.contentWindow, messageEvent.data, "http://localhost:8002", messageEvent.ports);
+        } else {
+          MessageChannel.propagateEvent( messageEvent );
+        }
+      });
+    };
+
+    window.addEventListener('DOMContentLoaded', loadHandler, false);
+    document.body.appendChild( childFrame );
+  </script>
+  <ul></ul>
+</body>
+</html>
+
