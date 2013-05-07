@@ -13,14 +13,10 @@
 
     var loadHandler = function( event ) {
       window.addEventListener( 'message', function( event ) {
-        var messageEvent = MessageChannel.decodeEvent( event );
-
-        if( messageEvent.data.childFrameLoaded ) {
+        if( event.data.childFrameLoaded ) {
           Window.postMessage( window.parent, {childFrameLoaded: true}, "*" );
-        } else if( messageEvent.data.openCommunication ) {
-          Window.postMessage( childFrame.contentWindow, messageEvent.data, "http://localhost:8002", messageEvent.ports);
-        } else {
-          MessageChannel.propagateEvent( messageEvent );
+        } else if( event.data.openCommunication ) {
+          Window.postMessage( childFrame.contentWindow, event.data, "http://localhost:8002", event.ports);
         }
       });
     };

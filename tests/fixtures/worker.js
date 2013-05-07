@@ -5,10 +5,9 @@ importScripts('http://localhost:8000/lib/message_channel.js');
 var mc = new MessageChannel();
 
 this.addEventListener( 'message', function( event ) {
-  var messageEvent = MessageChannel.decodeEvent( event ),
-      port;
+  var port;
 
-  if( messageEvent.data.initialization ) {
+  if( event.data.initialization ) {
     port = mc.port1;
 
     port.addEventListener( 'message', function(event) {
@@ -18,8 +17,6 @@ this.addEventListener( 'message', function( event ) {
     });
     port.start();
     port.postMessage({initialized: true});
-  } else {
-    MessageChannel.propagateEvent( messageEvent );
   }
 });
 

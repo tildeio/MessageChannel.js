@@ -232,10 +232,8 @@ test("An iframe can send and receive messages through a fake message port", func
   parentFrame.setAttribute('src', "http://localhost:8001/tests/fixtures/iframe.html");
 
   messageHandler = function( event ) {
-    var messageEvent = MessageChannel.decodeEvent( event );
-
-    if( messageEvent.data.initialization ) {
-      port = messageEvent.ports[0];
+    if( event.data.initialization ) {
+      port = event.ports[0];
 
       port.addEventListener( 'message', function(event) {
         if( event.data.initialized ) {
@@ -250,8 +248,6 @@ test("An iframe can send and receive messages through a fake message port", func
 
       ok(true, "an iframe can communicate through `window.postMessage`");
       Window.postMessage( parentFrame.contentWindow, { initialization: true }, destinationUrl);
-    } else {
-      MessageChannel.propagateEvent( messageEvent );
     }
   };
 
@@ -274,10 +270,8 @@ test("A worker can send and receive messages through a fake message port", funct
       worker = new Worker( workerBaseUrl + '/tests/fixtures/worker.js');
 
   worker.addEventListener('message', function( event ) {
-    var messageEvent = MessageChannel.decodeEvent( event );
-
-    if( messageEvent.data.initialization ) {
-      port = messageEvent.ports[0];
+    if( event.data.initialization ) {
+      port = event.ports[0];
 
       port.addEventListener( 'message', function(event) {
         if( event.data.initialized ) {
@@ -293,8 +287,6 @@ test("A worker can send and receive messages through a fake message port", funct
 
       ok(true, "a worker can communicate through `worker.postMessage`");
       Worker.postMessage( worker, { initialization: true }, [], destinationUrl);
-    } else {
-      MessageChannel.propagateEvent( messageEvent );
     }
   });
 
@@ -315,9 +307,6 @@ test("A port is sent with its message queue", function() {
   mc.port1.postMessage("I'm alive!!");
 
   worker.addEventListener('message', function( event ) {
-    var messageEvent = MessageChannel.decodeEvent( event );
-
-    MessageChannel.propagateEvent( messageEvent );
   });
 
   stop();
@@ -348,12 +337,8 @@ test("A port can be passed through and still be used to communicate", function()
   mc.port1.start();
 
   messageHandler = function( event ) {
-    var messageEvent = MessageChannel.decodeEvent( event );
-
-    if( messageEvent.data.childFrameLoaded ) {
+    if( event.data.childFrameLoaded ) {
       Window.postMessage(parentFrame.contentWindow, {openCommunication: true}, "http://localhost:8001", [mc.port2]);
-    } else {
-      MessageChannel.propagateEvent( messageEvent );
     }
   };
 

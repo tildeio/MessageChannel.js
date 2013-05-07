@@ -10,12 +10,8 @@
   <script type="text/javascript">
     var loadHandler = function( event ) {
       window.addEventListener( 'message', function( event ) {
-        var messageEvent = MessageChannel.decodeEvent( event );
-
-        if( messageEvent.data.openCommunication ) {
-          messageEvent.ports[0].postMessage( 'Copy that' );
-        } else {
-          MessageChannel.propagateEvent( messageEvent );
+        if( event.data.openCommunication ) {
+          event.ports[0].postMessage( 'Copy that' );
         }
       });
 

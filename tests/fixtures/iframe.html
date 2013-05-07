@@ -15,29 +15,23 @@
     var loadHandler = function(){
       // Define our message handler.
       var messageHandler = function(event){
-        var messageEvent = MessageChannel.decodeEvent( event );
+        if( event.data.initialization ) {
+          port = mc.port1;
 
-        if( messageEvent.messageChannel ) {
-          MessageChannel.propagateEvent( messageEvent );
-        } else {
-          if( messageEvent.data.initialization ) {
-            port = mc.port1;
-
-            port.addEventListener( 'message', function(event) {
-              if( event.data.messageToIframe ) {
-                port.postMessage({messageFromIframe: true});
-              }
-            });
-            port.start();
-            port.postMessage({initialized: true});
-          }
+          port.addEventListener( 'message', function(event) {
+            if( event.data.messageToIframe ) {
+              port.postMessage({messageFromIframe: true});
+            }
+          });
+          port.start();
+          port.postMessage({initialized: true});
         }
       }
 
       // Listen for the message from iframe[0]
-      window.addEventListener('message', messageHandler,false);
+      window.addEventListener('message', messageHandler, false);
     }
-    window.addEventListener('DOMContentLoaded',loadHandler,false);
+    window.addEventListener('DOMContentLoaded', loadHandler, false);
 
     Window.postMessage( window.parent, { initialization: true } , destinationUrl, [mc.port2]);
   </script>
