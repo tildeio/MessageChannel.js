@@ -29,9 +29,17 @@
       }
 
       // Listen for the message from iframe[0]
-      window.addEventListener('message', messageHandler, false);
+      if( window.addEventListener ) {
+        window.addEventListener('message', messageHandler, false);
+      } else {
+        window.attachEvent('onmessage', messageHandler);
+      }
     }
-    window.addEventListener('DOMContentLoaded', loadHandler, false);
+    if( window.addEventListener ) {
+      window.addEventListener('DOMContentLoaded', loadHandler, false);
+    } else {
+      window.attachEvent('onreadystatechange', loadHandler);
+    }
 
     Window.postMessage( window.parent, { initialization: true } , destinationUrl, [mc.port2]);
   </script>

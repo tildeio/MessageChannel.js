@@ -21,7 +21,11 @@
       });
     };
 
-    window.addEventListener('DOMContentLoaded', loadHandler, false);
+    if( window.addEventListener ) {
+      window.addEventListener('DOMContentLoaded', loadHandler, false);
+    } else {
+      window.attachEvent('onreadystatechange', loadHandler);
+    }
     document.body.appendChild( childFrame );
   </script>
   <ul></ul>

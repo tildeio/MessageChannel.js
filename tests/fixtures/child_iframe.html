@@ -9,16 +9,26 @@
 <body>
   <script type="text/javascript">
     var loadHandler = function( event ) {
-      window.addEventListener( 'message', function( event ) {
+      var messageHandler = function( event ) {
         if( event.data.openCommunication ) {
           event.ports[0].postMessage( 'Copy that' );
         }
-      });
+      };
+
+      if( window.addEventListener ) {
+        window.addEventListener('message', messageHandler, false);
+      } else {
+        window.attachEvent('onmessage', messageHandler);
+      }
 
       Window.postMessage( window.parent, {childFrameLoaded: true}, "*" );
     };
 
-    window.addEventListener('DOMContentLoaded', loadHandler, false);
+    if( window.addEventListener ) {
+      window.addEventListener('DOMContentLoaded', loadHandler, false);
+    } else {
+      window.attachEvent('onreadystatechange', loadHandler);
+    }
   </script>
   <ul></ul>
 </body>

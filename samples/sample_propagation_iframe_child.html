@@ -1,32 +1,47 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Sample iFrame</title>
+  <title>Sample child iFrame</title>
+  <script src="../lib/jquery-1.9.1.min.js"></script>
+  <script src="../lib/uuid.core.js"></script>
+  <script src="../lib/kamino.js"></script>
+  <script src="../lib/message_channel.js"></script>
 </head>
 <body>
-  <script src="../lib/jquery-1.9.1.min.js"></script>
   <script type="text/javascript">
     var destinationUrl = window.location.protocol + "//" + window.location.hostname + ":" + (parseInt(window.location.port) - 1);
     var printMessage = function( text ) {
       var li = document.createElement('li')
-          t = document.createTextNode( event.data ),
+          t = document.createTextNode( text ),
           ul = document.querySelector('ul');
       li.appendChild( t );
       ul.appendChild( li );
     };
-    var loadHandler = function(){
-      var mc,
-      mc = new MessageChannel();
 
-      // Send a port to our parent document.
-      window.parent.postMessage( 'childHasLoaded', destinationUrl, [mc.port2]);
+    var loadHandler = function(){
+      var mc = new MessageChannel();
 
       // Set up our port event listener.
       mc.port1.addEventListener( 'message', function( event ) {
         printMessage( event.data );
+
+        mc.port1.postMessage('Confirm');
       });
       // Open the port
       mc.port1.start();
+
+      // TODO: this is needed, otherwise we don't propagate events
+      // Need to make it better
+      var messageHandler = function() { };
+
+      if( window.addEventListener ) {
+        window.addEventListener('message', messageHandler, false);
+      } else {
+        window.attachEvent('onmessage', messageHandler);
+      }
+
+      // Send a port to our parent document.
+      Window.postMessage( window.parent, 'childHasLoaded', destinationUrl, [mc.port2]);
     }
 
     $(document).ready( loadHandler );
