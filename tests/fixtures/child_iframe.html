@@ -2,6 +2,7 @@
 <html>
 <head>
   <title>Child iFrame</title>
+  <script src="../../lib/jquery-1.9.1.min.js"></script>
   <script src="../../lib/uuid.core.js"></script>
   <script src="../../lib/kamino.js"></script>
   <script src="../../lib/message_channel.js"></script>
@@ -24,11 +25,7 @@
       Window.postMessage( window.parent, {childFrameLoaded: true}, "*" );
     };
 
-    if( window.addEventListener ) {
-      window.addEventListener('DOMContentLoaded', loadHandler, false);
-    } else {
-      window.attachEvent('onreadystatechange', loadHandler);
-    }
+    $( document ).ready( loadHandler );
   </script>
   <ul></ul>
 </body>

@@ -2,31 +2,40 @@
 <html>
 <head>
   <title>Parent iFrame</title>
+  <script src="../../lib/jquery-1.9.1.min.js"></script>
   <script src="../../lib/uuid.core.js"></script>
   <script src="../../lib/kamino.js"></script>
   <script src="../../lib/message_channel.js"></script>
 </head>
 <body>
   <script type="text/javascript">
-    var childFrame = document.createElement('iframe');
-    childFrame.setAttribute('src', "http://localhost:8002/tests/fixtures/child_iframe.html");
+    var childFrame = document.createElement('iframe'),
+        host = window.location.protocol + "//" + window.location.hostname,
+        iFramePort = parseInt(window.location.port) + 1,
+        iFrameOrigin = host + ':' + iFramePort,
+        iFrameURL = iFrameOrigin + "/tests/fixtures/child_iframe.html";
+
+    childFrame.setAttribute('src', iFrameURL);
 
     var loadHandler = function( event ) {
-      window.addEventListener( 'message', function( event ) {
+      var messageHandler = function( event ) {
         if( event.data.childFrameLoaded ) {
           Window.postMessage( window.parent, {childFrameLoaded: true}, "*" );
         } else if( event.data.openCommunication ) {
-          Window.postMessage( childFrame.contentWindow, event.data, "http://localhost:8002", event.ports);
+          Window.postMessage( childFrame.contentWindow, event.data, iFrameOrigin, event.ports);
         }
-      });
+      };
+
+      if( window.addEventListener ) {
+        window.addEventListener( 'message', messageHandler );
+      } else {
+        window.attachEvent( 'onmessage', messageHandler );
+      }
+
+      document.body.appendChild( childFrame );
     };
 
-    if( window.addEventListener ) {
-      window.addEventListener('DOMContentLoaded', loadHandler, false);
-    } else {
-      window.attachEvent('onreadystatechange', loadHandler);
-    }
-    document.body.appendChild( childFrame );
+    $( document ).ready( loadHandler );
   </script>
   <ul></ul>
 </body>

@@ -14,11 +14,10 @@
     var destinationUrl = window.location.protocol + "//" + window.location.hostname + ":" + (parseInt(window.location.port) - 1),
         buttonHello = document.querySelector('#hello'),
         buttonYt = document.querySelector('#yt');
+
     var loadHandler = function(){
-      var mc,
-          mcYt;
-      mc = new MessageChannel();
-      mcYt = new MessageChannel();
+      var mc = new MessageChannel(),
+          mcYt = new MessageChannel();
 
       var clickHandler = function(){
         var msg = 'Hello';

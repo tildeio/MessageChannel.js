@@ -2,6 +2,7 @@
 <html>
 <head>
   <title>iFrame</title>
+  <script src="../../lib/jquery-1.9.1.min.js"></script>
   <script src="../../lib/uuid.core.js"></script>
   <script src="../../lib/kamino.js"></script>
   <script src="../../lib/message_channel.js"></script>
@@ -26,7 +27,7 @@
           port.start();
           port.postMessage({initialized: true});
         }
-      }
+      };
 
       // Listen for the message from iframe[0]
       if( window.addEventListener ) {
@@ -34,14 +35,11 @@
       } else {
         window.attachEvent('onmessage', messageHandler);
       }
-    }
-    if( window.addEventListener ) {
-      window.addEventListener('DOMContentLoaded', loadHandler, false);
-    } else {
-      window.attachEvent('onreadystatechange', loadHandler);
-    }
 
-    Window.postMessage( window.parent, { initialization: true } , destinationUrl, [mc.port2]);
+      Window.postMessage( window.parent, { initialization: true } , destinationUrl, [mc.port2]);
+    };
+
+    $( document ).ready( loadHandler );
   </script>
 </body>
 </html>

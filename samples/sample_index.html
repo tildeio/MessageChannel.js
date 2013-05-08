@@ -12,14 +12,14 @@
   <button>Send to iframe</button>
   <script type="text/javascript">
     var destinationUrl = window.location.protocol + "//" + window.location.hostname + ":" + (parseInt(window.location.port) + 1),
-        button = document.querySelector('button');
+        button = document.querySelector('button'),
+        iframe = document.createElement('iframe');
+
+    iframe.setAttribute("src", destinationUrl + "/samples/sample_iframe.html");
+
     var loadHandler = function(){
       // Define our message handler.
       var messageHandler = function(messageEvent){
-
-        <!-- if(messageEvent.origin !== destinationUrl) { -->
-          <!-- return; -->
-        <!-- } -->
 
         // Retrieve the port
         if( messageEvent.data === "documentAHasLoaded" ) {
@@ -27,13 +27,14 @@
 
           for(var i=0 ; i<ports.length ; i++) {
             // Define our message event handler.
-            ports[i].setOnMessage( function( event ) {
+            ports[i].addEventListener( 'message', function( event ) {
               var li = document.createElement('li')
                   t = document.createTextNode( event.data ),
                   ul = document.querySelector('ul');
               li.appendChild( t );
               ul.appendChild( li );
             });
+            ports[i].start();
           }
 
           // Our form submission handler
@@ -41,6 +42,7 @@
             var msg = 'add <foo@example.com> to game circle.';
             ports[0].postMessage(msg);
           }
+
           if( button.addEventListener ) {
             button.addEventListener('click',clickHandler,false);
           } else {
@@ -55,13 +57,11 @@
       } else {
         window.attachEvent('onmessage', messageHandler);
       }
+
+      document.body.appendChild( iframe );
     }
 
     $(document).ready( loadHandler );
-
-    var iframe = document.createElement('iframe');
-    iframe.setAttribute("src", destinationUrl + "/samples/sample_iframe.html");
-    document.body.appendChild( iframe );
   </script>
   <div><ul></ul></div>
 </body>
