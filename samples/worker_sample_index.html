@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Sample Window</title>
+</head>
+<body>
+  <script type="text/javascript">
+    var myWorker = new Worker("worker.js");
+
+    myWorker.onmessage = function (oEvent) {
+      console.log("Worker said : " + oEvent.data);
+    };
+
+    myWorker.postMessage("ali");
+  </script>
+</body>
+</html>

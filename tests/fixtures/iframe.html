@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>iFrame</title>
+  <script src="../../lib/uuid.core.js"></script>
+  <script src="../../lib/kamino.js"></script>
+  <script src="../../lib/message_channel.js"></script>
+</head>
+<body>
+  <script type="text/javascript">
+    var destinationUrl = window.location.protocol + "//" + window.location.hostname + ":" + (parseInt(window.location.port) - 1),
+        mc = new MessageChannel(),
+        port;
+
+    var loadHandler = function(){
+      // Define our message handler.
+      var messageHandler = function(event){
+        var messageEvent = MessageChannel.decodeEvent( event );
+
+        if( messageEvent.messageChannel ) {
+          MessageChannel.propagateEvent( messageEvent );
+        } else {
+          if( messageEvent.data.initialization ) {
+            port = mc.port1;
+
+            port.addEventListener( 'message', function(event) {
+              if( event.data.messageToIframe ) {
+                port.postMessage({messageFromIframe: true});
+              }
+            });
+            port.start();
+            port.postMessage({initialized: true});
+          }
+        }
+      }
+
+      // Listen for the message from iframe[0]
+      window.addEventListener('message', messageHandler,false);
+    }
+    window.addEventListener('DOMContentLoaded',loadHandler,false);
+
+    Window.postMessage( window.parent, { initialization: true } , destinationUrl, [mc.port2]);
+  </script>
+</body>
+</html>
