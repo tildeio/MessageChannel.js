@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Sample Window</title>
+</head>
+<body>
+  <script src="../lib/jquery-1.9.1.min.js"></script>
+
+  <script type="text/javascript">
+    var destinationUrl = window.location.protocol + "//" + window.location.hostname + ":" + (parseInt(window.location.port) + 1);
+
+    var printMessage = function( text ) {
+      var li = document.createElement('li')
+          t = document.createTextNode( event.data ),
+          ul = document.querySelector('ul');
+      li.appendChild( t );
+      ul.appendChild( li );
+    };
+
+    var loadHandler = function(){
+      // Define our message handler.
+      var messageHandler = function(messageEvent){
+
+        if(messageEvent.origin !== destinationUrl) {
+          return;
+        }
+
+        printMessage( 'window message handler: ' + messageEvent.data );
+
+        var fakeEvent = messageEvent;
+
+        // Retrieve the port
+        if( fakeEvent.data === "documentAHasLoaded" ) {
+          var ports = fakeEvent.ports;
+
+          for(var i=0 ; i<ports.length ; i++) {
+            // Define our message event handler.
+            ports[i].addEventListener('message', function( event ) {
+              printMessage( 'port message handler: ' + event.data );
+            });
+            ports[i].postMessage('here we go');
+          }
+        }
+      }
+
+      // Listen for the message from iframe[0]
+      if( window.addEventListener ) {
+        window.addEventListener('message', messageHandler, false);
+      } else {
+        window.attachEvent('onmessage', messageHandler);
+      }
+    }
+
+    var iframe = document.createElement('iframe');
+    iframe.setAttribute("src", destinationUrl + "/samples/sample_propagation_iframe.html");
+    document.body.appendChild( iframe );
+
+    $(document).ready( loadHandler );
+  </script>
+  <div><ul></ul></div>
+</body>
+</html>

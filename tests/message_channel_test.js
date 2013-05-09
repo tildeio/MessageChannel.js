@@ -1,3 +1,5 @@
+var messageHandler, parentFrame;
+
 QUnit.module("MessageChannel", {
   teardown: function() {
     MessageChannel.reset();
@@ -11,24 +13,14 @@ test("Assert not file://", function() {
 test("MessageChannel() creates 2 entangled ports", function() {
   var mc = new MessageChannel();
 
-  equal( mc.port1, mc.port2._getEntangledPort(), "The port 1 is the enatngled port of port 2");
-  equal( mc.port2, mc.port1._getEntangledPort(), "The port 2 is the enatngled port of port 1");
+  equal( mc.port1, mc.port2._getEntangledPort(), "The port 1 is the entangled port of port 2");
+  equal( mc.port2, mc.port1._getEntangledPort(), "The port 2 is the entangled port of port 1");
 });
 
 QUnit.module("MessagePort", {
   teardown: function() {
     MessageChannel.reset();
   }
-});
-
-test("A MessagePort object registers itself to the user agent based on its uuid", function() {
-  var mp;
-
-  deepEqual( window.messagePorts, {}, "The message ports map is initially empty" );
-
-  mp = MessageChannel._createPort();
-
-  equal( window.messagePorts[mp.uuid], mp, "The message port is registered");
 });
 
 test("A MessagePort has a default uuid", function() {
@@ -48,14 +40,23 @@ test("A MessagePort can be initialized with a uuid", function() {
 });
 
 test("Starting the port dispatches the stored messages in the queue", function() {
+  var dispatched = false,
+      clock = sinon.useFakeTimers();
   expect(2);
+
   var mp = MessageChannel._createPort();
   mp._messageQueue.push("a", "b");
   mp.dispatchEvent = function() {
-    ok(true, "dispatchEvent is called when starting the communication on the port");
+    dispatched = true;
   };
 
   mp.start();
+  ok(!dispatched, "The event is queued but not dispatched");
+
+  clock.tick(1);
+  ok(dispatchEvent, "dispatchEvent is called when starting the communication on the port");
+
+  clock.restore();
 });
 
 test("When the port isn't opened, the events are queued", function() {
@@ -86,23 +87,24 @@ test("When the port is opened, the events are dispatched", function() {
 });
 
 test("When the port isn't entangled, nothing is sent", function() {
-  expect(0);
+  expect(1);
   var mp = MessageChannel._createPort();
   mp.start();
   window.postMessage = function() {
     ok(false, "window.postMessage should not be called");
   };
   mp.postMessage( 'Sad things are sad' );
+  equal(mp._messageQueue.length, 0, "The message is not queued");
 });
 
-test("When the port is entangled, stringified data is sent to the entangled port", function() {
+test("When the port is entangled to a port sent to another user agent, stringified data is sent to the entangled port", function() {
   expect(2);
   var mp1 = MessageChannel._createPort(),
-      mp2 = MessageChannel._createPort('myUuid');
+      mp2 = MessageChannel._createPort('myUuid'),
+      kaminoStringify = Kamino.stringify;
 
   mp1._entangledPortUuid = mp2.uuid;
-  // this is sad to have to do this
-  mp1.setCurrentTarget( window );
+  mp1._currentTarget = window;
   mp1.destinationUrl = "http://itworksforme";
 
   Kamino.stringify = function() {
@@ -114,18 +116,50 @@ test("When the port is entangled, stringified data is sent to the entangled port
     equal(targetOrigin, "http://itworksforme", "The message is sent to the right url");
   };
   mp1.postMessage( 'Sad things are sad' );
+
+  Kamino.stringify = kaminoStringify;
 });
 
-// test("When setting the `onmessage` event handler, it dispatches all pending events", function() {
-  // expect(1);
-  // var mp = MessageChannel._createPort();
+test("When the port is entangled to a port sent to another user agent, the current target is preserved", function() {
+  expect(2);
+  var mp1 = MessageChannel._createPort(),
+      mp2 = MessageChannel._createPort('myUuid');
 
-  // mp.start = function() {
-    // ok(true, "Events are dispatched");
-  // };
-  // mp._enqueueEvent( 'something' );
-  // mp.onmessage = function() {};
-// });
+  mp1._entangledPortUuid = mp2.uuid;
+  mp1._currentTarget = window;
+  mp1.destinationUrl = "http://itworksforme";
+  mp2._currentTarget = window;
+
+  window.postMessage = function( message, targetOrigin) {
+    ok(true, "the message is sent");
+  };
+  mp1.postMessage( 'Sad things are sad' );
+
+  deepEqual(mp2._currentTarget, window, "Current target is not modified");
+});
+
+test("When the port is entangled to a port not sent to another user agent, stringified data is queued to the entangled port", function() {
+  expect(3);
+  var mp1 = MessageChannel._createPort(),
+      mp2 = MessageChannel._createPort('myUuid'),
+      kaminoStringify = Kamino.stringify;
+
+  mp1._entangledPortUuid = mp2.uuid;
+
+  Kamino.stringify = function() {
+    return 'an encoded string';
+  };
+
+  window.postMessage = function( message, targetOrigin) {
+    ok(false, "The message should not be sent");
+  };
+  equal(mp2._messageQueue.length, 0, "The message queue is initially empty");
+  mp1.postMessage( 'Sad things are sad' );
+  equal(mp2._messageQueue.length, 1, "The event is queued");
+  equal(mp2._messageQueue[0], "an encoded string", "The queued event is encoded");
+
+  Kamino.stringify = kaminoStringify;
+});
 
 QUnit.module("MessagePort - EventTarget", {
   teardown: function() {
@@ -180,4 +214,151 @@ test("A listener can be removed", function() {
 
   mp.removeEventListener( 'message', listener2 );
   mp.dispatchEvent( "I hear you" );
+});
+
+QUnit.module("MessageChannel - window", {
+  teardown: function() {
+    MessageChannel.reset();
+    document.body.removeChild( parentFrame );
+    window.removeEventListener('message', messageHandler);
+  }
+});
+
+test("An iframe can send and receive messages through a fake message port", function() {
+  expect(3);
+  var destinationUrl = window.location.protocol + "//" + window.location.hostname + ":" + (parseInt(window.location.port) + 1);
+
+  parentFrame = document.createElement('iframe');
+  parentFrame.setAttribute('src', "http://localhost:8001/tests/fixtures/iframe.html");
+
+  messageHandler = function( event ) {
+    var messageEvent = MessageChannel.decodeEvent( event );
+
+    if( messageEvent.data.initialization ) {
+      port = messageEvent.ports[0];
+
+      port.addEventListener( 'message', function(event) {
+        if( event.data.initialized ) {
+          ok(true, "an iframe can send a message through a port");
+          port.postMessage({messageToIframe: true});
+        } else if ( event.data.messageFromIframe ) {
+          ok(true, "an iframe can receive a message through a port");
+          start();
+        }
+      });
+      port.start();
+
+      ok(true, "an iframe can communicate through `window.postMessage`");
+      Window.postMessage( parentFrame.contentWindow, { initialization: true }, destinationUrl);
+    } else {
+      MessageChannel.propagateEvent( messageEvent );
+    }
+  };
+
+  window.addEventListener( 'message', messageHandler );
+  document.body.appendChild( parentFrame );
+
+  stop();
+});
+
+QUnit.module("MessageChannel - web worker", {
+  teardown: function() {
+    MessageChannel.reset();
+  }
+});
+
+test("A worker can send and receive messages through a fake message port", function() {
+  expect(3);
+  var destinationUrl = window.location.protocol + "//" + window.location.hostname + ":" + (parseInt(window.location.port) + 1),
+      workerBaseUrl = window.location.protocol + '//' + window.location.host,
+      worker = new Worker( workerBaseUrl + '/tests/fixtures/worker.js');
+
+  worker.addEventListener('message', function( event ) {
+    var messageEvent = MessageChannel.decodeEvent( event );
+
+    if( messageEvent.data.initialization ) {
+      port = messageEvent.ports[0];
+
+      port.addEventListener( 'message', function(event) {
+        if( event.data.initialized ) {
+          ok(true, "a worker can send a message through a port");
+          port.postMessage({messageToWorker: true});
+        } else if ( event.data.messageFromWorker ) {
+          ok(true, "a worker can receive a message through a port");
+          start();
+        }
+      });
+
+      port.start();
+
+      ok(true, "a worker can communicate through `worker.postMessage`");
+      Worker.postMessage( worker, { initialization: true }, [], destinationUrl);
+    } else {
+      MessageChannel.propagateEvent( messageEvent );
+    }
+  });
+
+  stop();
+});
+
+test("A port is sent with its message queue", function() {
+  expect(1);
+  var workerBaseUrl = window.location.protocol + '//' + window.location.host;
+      worker = new Worker( workerBaseUrl + '/tests/fixtures/worker_events.js'),
+      mc = new MessageChannel();
+
+  mc.port1.addEventListener( 'message', function(event) {
+    start();
+    equal(event.data, "I'm alive!!", "The worker communicated through the port");
+  });
+  //Enqueue a message before sending the port
+  mc.port1.postMessage("I'm alive!!");
+
+  worker.addEventListener('message', function( event ) {
+    var messageEvent = MessageChannel.decodeEvent( event );
+
+    MessageChannel.propagateEvent( messageEvent );
+  });
+
+  stop();
+  mc.port1.start();
+
+  Worker.postMessage( worker, {type: 'DocumentHasLoaded'}, [mc.port2], '*');
+});
+
+QUnit.module("MessageChannel - event propagation", {
+  teardown: function() {
+    MessageChannel.reset();
+    document.body.removeChild( parentFrame );
+    window.removeEventListener('message', messageHandler);
+  }
+});
+
+test("A port can be passed through and still be used to communicate", function() {
+  expect(1);
+  parentFrame = document.createElement('iframe');
+  parentFrame.setAttribute('src', "http://localhost:8001/tests/fixtures/parent_iframe.html");
+
+  var mc = new MessageChannel();
+
+  mc.port1.addEventListener( 'message', function( event ) {
+    start();
+    equal(event.data, 'Copy that', "A window can receive events from a port passed between windows");
+  });
+  mc.port1.start();
+
+  messageHandler = function( event ) {
+    var messageEvent = MessageChannel.decodeEvent( event );
+
+    if( messageEvent.data.childFrameLoaded ) {
+      Window.postMessage(parentFrame.contentWindow, {openCommunication: true}, "http://localhost:8001", [mc.port2]);
+    } else {
+      MessageChannel.propagateEvent( messageEvent );
+    }
+  };
+
+  window.addEventListener('message', messageHandler);
+
+  stop();
+  document.body.appendChild( parentFrame );
 });
