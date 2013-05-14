@@ -7,7 +7,7 @@ this.addEventListener( 'message', function( event ) {
     var port = event.ports[0];
 
     port.addEventListener( 'message', function( event ) {
-      port.postMessage( event.data );
+      port.postMessage( 'Yes, ' + event.data );
     });
 
     port.start();

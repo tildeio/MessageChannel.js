@@ -1,4 +1,18 @@
-var messageHandler, parentFrame, originalPostMessage;
+var messageHandlers = [],
+    parentFrame,
+    originalPostMessage;
+
+var removeMessageHandlers = function() {
+  var messageHandler;
+
+  while( messageHandler = messageHandlers.pop() ) {
+    if( window.removeEventListener ) {
+      window.removeEventListener('message', messageHandler);
+    } else {
+      window.detachEvent('onmessage', messageHandler);
+    }
+  }
+};
 
 QUnit.module("MessageChannel", {
   teardown: function() {
@@ -172,7 +186,7 @@ QUnit.module("MessagePort - EventTarget", {
   }
 });
 
-test("Muliple listeners can be added to a message port", function() {
+test("Multiple listeners can be added to a message port", function() {
   var mp = MessageChannel._createPort();
 
   deepEqual(mp._listeners, {}, "A message port has no listeners by default");
@@ -225,11 +239,7 @@ QUnit.module("MessageChannel - window", {
   teardown: function() {
     MessageChannel.reset();
     document.body.removeChild( parentFrame );
-    if( window.removeEventListener ) {
-      window.removeEventListener('message', messageHandler);
-    } else {
-      window.detachEvent('onmessage', messageHandler);
-    }
+    removeMessageHandlers();
   }
 });
 
@@ -265,9 +275,42 @@ test("An iframe can send and receive messages through a fake message port", func
   } else {
     window.attachEvent( 'onmessage', messageHandler );
   }
+  messageHandlers.push( messageHandler );
 
   stop();
   document.body.appendChild( parentFrame );
+});
+
+QUnit.module("window's message event handlers", {
+  teardown: function() {
+    removeMessageHandlers();
+  }
+});
+
+test("Multiple message listeners can be added to a window", function() {
+  expect(2);
+
+  var host = window.location.protocol + "//" + window.location.host,
+      messageHandler1 = function(event) {
+        equal( event.data, 'test', "The first handler is called");
+      },
+      messageHandler2 = function(event) {
+        equal( event.data, 'test', "The second handler is called");
+        start();
+      };
+
+  if( window.addEventListener ) {
+    window.addEventListener('message', messageHandler1, false);
+    window.addEventListener('message', messageHandler2, false);
+  } else {
+    window.attachEvent('onmessage', messageHandler1);
+    window.attachEvent('onmessage', messageHandler2);
+  }
+  messageHandlers.push( messageHandler1 );
+  messageHandlers.push( messageHandler2 );
+
+  stop();
+  Window.postMessage(window, 'test', host);
 });
 
 QUnit.module("MessageChannel - web worker", {
@@ -277,20 +320,18 @@ QUnit.module("MessageChannel - web worker", {
 });
 
 test("A worker can send and receive messages through a fake message port", function() {
-  expect(3);
+  expect(2);
   var destinationUrl = window.location.protocol + "//" + window.location.hostname + ":" + (parseInt(window.location.port) + 1),
       workerBaseUrl = window.location.protocol + '//' + window.location.host,
-      worker = new Worker( workerBaseUrl + '/tests/fixtures/worker.js');
+      worker = new Worker( workerBaseUrl + '/tests/fixtures/worker.js'),
+      port;
 
   worker.addEventListener('message', function( event ) {
-    if( event.data.initialization ) {
+    if( event.data.sendPort ) {
       port = event.ports[0];
 
       port.addEventListener( 'message', function(event) {
-        if( event.data.initialized ) {
-          ok(true, "a worker can send a message through a port");
-          port.postMessage({messageToWorker: true});
-        } else if ( event.data.messageFromWorker ) {
+        if ( event.data.messageFromWorker ) {
           ok(true, "a worker can receive a message through a port");
           start();
         }
@@ -298,11 +339,14 @@ test("A worker can send and receive messages through a fake message port", funct
       port.start();
 
       ok(true, "a worker can communicate through `worker.postMessage`");
-      Worker.postMessage( worker, { initialization: true }, [], destinationUrl);
+
+      // A worker can receive messages through a port
+      port.postMessage({messageToWorker: true});
     }
-  });
+  }, false);
 
   stop();
+  Worker.postMessage( worker, {initialization: true}, [] );
 });
 
 test("A port is sent with its message queue", function() {
@@ -313,29 +357,22 @@ test("A port is sent with its message queue", function() {
 
   mc.port1.addEventListener( 'message', function(event) {
     start();
-    equal(event.data, "I'm alive!!", "The worker communicated through the port");
+    equal(event.data, "Yes, I'm alive!!", "The worker communicated through the port");
   });
   //Enqueue a message before sending the port
   mc.port1.postMessage("I'm alive!!");
 
-  worker.addEventListener('message', function( event ) {
-  });
-
   stop();
   mc.port1.start();
 
-  Worker.postMessage( worker, {type: 'DocumentHasLoaded'}, [mc.port2], '*');
+  Worker.postMessage( worker, {type: 'DocumentHasLoaded'}, [mc.port2] );
 });
 
 QUnit.module("MessageChannel - event propagation", {
   teardown: function() {
     MessageChannel.reset();
     document.body.removeChild( parentFrame );
-    if( window.removeEventListener ) {
-      window.removeEventListener('message', messageHandler);
-    } else {
-      window.detachEvent('onmessage', messageHandler);
-    }
+    removeMessageHandlers();
   }
 });
 
@@ -368,6 +405,7 @@ test("A port can be passed through and still be used to communicate", function()
   } else {
     window.attachEvent('onmessage', messageHandler);
   }
+  messageHandlers.push( messageHandler );
 
   stop();
   document.body.appendChild( parentFrame );

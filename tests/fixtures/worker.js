@@ -4,20 +4,16 @@ importScripts('http://localhost:8000/lib/message_channel.js');
 
 var mc = new MessageChannel();
 
-this.addEventListener( 'message', function( event ) {
-  var port;
-
-  if( event.data.initialization ) {
-    port = mc.port1;
-
-    port.addEventListener( 'message', function(event) {
-      if( event.data.messageToWorker ) {
-        port.postMessage({messageFromWorker: true});
-      }
-    });
-    port.start();
-    port.postMessage({initialized: true});
+mc.port1.addEventListener( 'message', function(event) {
+  // A worker can receive messages through a port
+  if( event.data.messageToWorker ) {
+    event.ports[0].postMessage({messageFromWorker: true});
   }
 });
+mc.port1.start();
 
-Worker.postMessage( this, { initialization: true }, [mc.port2], "http://localhost:8000");
+this.addEventListener( 'message', function( event ) {
+  if( event.data.initialization ) {
+    Worker.postMessage( this, { sendPort: true }, [mc.port2] );
+  }
+}, false);
