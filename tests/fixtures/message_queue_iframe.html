@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>iFrame</title>
+  <script src="../../lib/jquery-1.9.1.min.js"></script>
+  <script src="../../lib/uuid.core.js"></script>
+  <script src="../../lib/kamino.js"></script>
+  <script src="../../lib/message_channel.js"></script>
+</head>
+<body>
+  <script type="text/javascript">
+    var destinationUrl = window.location.protocol + "//" + window.location.hostname + ":" + (parseInt(window.location.port) - 1),
+        port;
+
+    var loadHandler = function(){
+      // Define our message handler.
+      var messageHandler = function(event){
+        if( event.data.initialization ) {
+          port = event.ports[0];
+
+          port.addEventListener( 'message', function(event) {
+            if( event.data.messageToIframe ) {
+              port.postMessage({messageFromIframe: true});
+            }
+          });
+          port.start();
+        }
+      };
+
+      // Listen for the message from iframe[0]
+      if( window.addEventListener ) {
+        window.addEventListener('message', messageHandler, false);
+      } else {
+        window.attachEvent('onmessage', messageHandler);
+      }
+
+      Window.postMessage( window.parent, { initialization: true } , destinationUrl, []);
+    };
+
+    $( document ).ready( loadHandler );
+  </script>
+</body>
+</html>

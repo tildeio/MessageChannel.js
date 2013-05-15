@@ -313,60 +313,62 @@ test("Multiple message listeners can be added to a window", function() {
   Window.postMessage(window, 'test', host);
 });
 
-QUnit.module("MessageChannel - web worker", {
-  teardown: function() {
-    MessageChannel.reset();
-  }
-});
-
-test("A worker can send and receive messages through a fake message port", function() {
-  expect(2);
-  var destinationUrl = window.location.protocol + "//" + window.location.hostname + ":" + (parseInt(window.location.port) + 1),
-      workerBaseUrl = window.location.protocol + '//' + window.location.host,
-      worker = new Worker( workerBaseUrl + '/tests/fixtures/worker.js'),
-      port;
-
-  worker.addEventListener('message', function( event ) {
-    if( event.data.sendPort ) {
-      port = event.ports[0];
-
-      port.addEventListener( 'message', function(event) {
-        if ( event.data.messageFromWorker ) {
-          ok(true, "a worker can receive a message through a port");
-          start();
-        }
-      });
-      port.start();
-
-      ok(true, "a worker can communicate through `worker.postMessage`");
-
-      // A worker can receive messages through a port
-      port.postMessage({messageToWorker: true});
+if( !!this.Worker ) {
+  QUnit.module("MessageChannel - web worker", {
+    teardown: function() {
+      MessageChannel.reset();
     }
-  }, false);
-
-  stop();
-  Worker.postMessage( worker, {initialization: true}, [] );
-});
-
-test("A port is sent with its message queue", function() {
-  expect(1);
-  var workerBaseUrl = window.location.protocol + '//' + window.location.host;
-      worker = new Worker( workerBaseUrl + '/tests/fixtures/worker_events.js'),
-      mc = new MessageChannel();
-
-  mc.port1.addEventListener( 'message', function(event) {
-    start();
-    equal(event.data, "Yes, I'm alive!!", "The worker communicated through the port");
   });
-  //Enqueue a message before sending the port
-  mc.port1.postMessage("I'm alive!!");
 
-  stop();
-  mc.port1.start();
+  test("A worker can send and receive messages through a fake message port", function() {
+    expect(2);
+    var destinationUrl = window.location.protocol + "//" + window.location.hostname + ":" + (parseInt(window.location.port) + 1),
+        workerBaseUrl = window.location.protocol + '//' + window.location.host,
+        worker = new Worker( workerBaseUrl + '/tests/fixtures/worker.js'),
+        port;
 
-  Worker.postMessage( worker, {type: 'DocumentHasLoaded'}, [mc.port2] );
-});
+    worker.addEventListener('message', function( event ) {
+      if( event.data.sendPort ) {
+        port = event.ports[0];
+
+        port.addEventListener( 'message', function(event) {
+          if ( event.data.messageFromWorker ) {
+            ok(true, "a worker can receive a message through a port");
+            start();
+          }
+        });
+        port.start();
+
+        ok(true, "a worker can communicate through `worker.postMessage`");
+
+        // A worker can receive messages through a port
+        port.postMessage({messageToWorker: true});
+      }
+    }, false);
+
+    stop();
+    Worker.postMessage( worker, {initialization: true}, [] );
+  });
+
+  test("A port is sent with its message queue", function() {
+    expect(1);
+    var workerBaseUrl = window.location.protocol + '//' + window.location.host;
+        worker = new Worker( workerBaseUrl + '/tests/fixtures/worker_events.js'),
+        mc = new MessageChannel();
+
+    mc.port1.addEventListener( 'message', function(event) {
+      start();
+      equal(event.data, "Yes, I'm alive!!", "The worker communicated through the port");
+    });
+    //Enqueue a message before sending the port
+    mc.port1.postMessage("I'm alive!!");
+
+    stop();
+    mc.port1.start();
+
+    Worker.postMessage( worker, {type: 'DocumentHasLoaded'}, [mc.port2] );
+  });
+}
 
 QUnit.module("MessageChannel - event propagation", {
   teardown: function() {
@@ -404,6 +406,43 @@ test("A port can be passed through and still be used to communicate", function()
     window.addEventListener('message', messageHandler);
   } else {
     window.attachEvent('onmessage', messageHandler);
+  }
+  messageHandlers.push( messageHandler );
+
+  stop();
+  document.body.appendChild( parentFrame );
+});
+
+test("A port is sent with its message queue", function() {
+  expect(1);
+  var host = window.location.protocol + "//" + window.location.hostname,
+      iFramePort = parseInt(window.location.port) + 1,
+      iFrameOrigin = host + ':' + iFramePort,
+      iFrameURL = iFrameOrigin + "/tests/fixtures/message_queue_iframe.html",
+      mc = new MessageChannel();
+
+  parentFrame = document.createElement('iframe');
+  parentFrame.setAttribute('src', iFrameURL);
+
+  mc.port1.addEventListener( 'message', function(event) {
+    start();
+    equal(event.data.messageFromIframe, true, "The message was received by the port");
+  });
+  //Enqueue a message before sending the port
+  mc.port1.postMessage({messageToIframe: true});
+
+  mc.port1.start();
+
+  messageHandler = function( event ) {
+    if( event.data.initialization ) {
+      Window.postMessage( parentFrame.contentWindow, {initialization: true}, iFrameOrigin, [mc.port2] );
+    }
+  };
+
+  if( window.addEventListener ) {
+    window.addEventListener( 'message', messageHandler, false );
+  } else {
+    window.attachEvent( 'onmessage', messageHandler );
   }
   messageHandlers.push( messageHandler );
 
