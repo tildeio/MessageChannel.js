@@ -2,44 +2,48 @@
 <html>
 <head>
   <title>Sample iFrame</title>
+  <script src="../lib/jquery-1.9.1.min.js"></script>
+  <script src="../lib/uuid.core.js"></script>
+  <script src="../lib/kamino.js"></script>
+  <script src="../lib/message_channel.js"></script>
 </head>
 <body>
-  <script src="../lib/jquery-1.9.1.min.js"></script>
   <script type="text/javascript">
     var origin = window.location.protocol + "//" + window.location.hostname,
         port = parseInt(window.location.port),
         destinationUrl = origin + ":" + ( port - 1),
         childIframeUrl = origin + ":" + ( port + 1);
+
     var printMessage = function( text ) {
       var li = document.createElement('li')
-          t = document.createTextNode( event.data ),
+          t = document.createTextNode( text ),
           ul = document.querySelector('ul');
       li.appendChild( t );
       ul.appendChild( li );
     };
+
     var loadHandler = function(){
       var messageHandler = function( messageEvent ) {
-        if(messageEvent.origin === childIframeUrl) {
-          messageEvent.ports[0].addEventListener('message', function( event ) {
-            printMessage( event.data );
-          });
+        printMessage( messageEvent.data );
 
+        if(messageEvent.data === 'childHasLoaded') {
           // Send a port to our parent document.
-          window.parent.postMessage( 'documentAHasLoaded', destinationUrl, messageEvent.ports);
+          Window.postMessage( window.parent, 'documentAHasLoaded', destinationUrl, messageEvent.ports);
         }
       };
+
       if( window.addEventListener ) {
         window.addEventListener('message', messageHandler, false);
       } else {
         window.attachEvent('onmessage', messageHandler);
       }
+
+      var iframe = document.createElement('iframe');
+      iframe.setAttribute("src", childIframeUrl + "/samples/sample_propagation_iframe_child.html");
+      document.body.appendChild( iframe );
     }
 
     $(document).ready( loadHandler );
-
-    var iframe = document.createElement('iframe');
-    iframe.setAttribute("src", childIframeUrl + "/samples/sample_propagation_iframe_child.html");
-    document.body.appendChild( iframe );
   </script>
   <div><ul></ul></div>
 </body>

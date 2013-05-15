@@ -8,7 +8,10 @@
 <body>
   <div id="qunit"></div>
   <script src="qunit/qunit.js"></script>
-  <script src="sinon-timers-1.6.0.js"></script>
+  <script src="sinon-timers-1.7.1.js"></script>
+  <![if IE]>
+  <script src="sinon-timers-ie-1.7.1.js"></script>
+  <![endif]>
   <script src="../lib/uuid.core.js"></script>
   <script src="../lib/kamino.js"></script>
   <script src="../lib/message_channel.js"></script>
