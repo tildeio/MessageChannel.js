@@ -30,16 +30,6 @@
       // Open the port
       mc.port1.start();
 
-      // TODO: this is needed, otherwise we don't propagate events
-      // Need to make it better
-      var messageHandler = function() { };
-
-      if( window.addEventListener ) {
-        window.addEventListener('message', messageHandler, false);
-      } else {
-        window.attachEvent('onmessage', messageHandler);
-      }
-
       // Send a port to our parent document.
       Window.postMessage( window.parent, 'childHasLoaded', destinationUrl, [mc.port2]);
     }

@@ -50,17 +50,6 @@
       // Open the port
       mc.port1.start();
 
-      var messageHandler = function( messageEvent ) {
-        <!-- if(messageEvent.origin !== destinationUrl) { -->
-          <!-- return; -->
-        <!-- } -->
-      };
-      if( window.addEventListener ) {
-        window.addEventListener('message', messageHandler, false);
-      } else {
-        window.attachEvent('onmessage', messageHandler);
-      }
-
       // Send a port to our parent document.
       Window.postMessage( window.parent, 'documentAHasLoaded', destinationUrl, [mc.port2, mcYt.port2]);
     }
