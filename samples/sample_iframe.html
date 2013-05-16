@@ -2,23 +2,22 @@
 <html>
 <head>
   <title>Sample iFrame</title>
-</head>
-<body>
   <script src="../lib/jquery-1.9.1.min.js"></script>
   <script src="../lib/uuid.core.js"></script>
   <script src="../lib/kamino.js"></script>
   <script src="../lib/message_channel.js"></script>
+</head>
+<body>
   <button id="hello">Send "Hello" to top window</button>
   <button id="yt">Send "yt" to top window</button>
   <script type="text/javascript">
     var destinationUrl = window.location.protocol + "//" + window.location.hostname + ":" + (parseInt(window.location.port) - 1),
         buttonHello = document.querySelector('#hello'),
         buttonYt = document.querySelector('#yt');
+
     var loadHandler = function(){
-      var mc,
-          mcYt;
-      mc = new MessageChannel();
-      mcYt = new MessageChannel();
+      var mc = new MessageChannel(),
+          mcYt = new MessageChannel();
 
       var clickHandler = function(){
         var msg = 'Hello';
@@ -40,9 +39,6 @@
         buttonYt.attachEvent('onclick',clickYtHandler);
       }
 
-      // Send a port to our parent document.
-      MessageChannel.postMessagePorts( window.parent, 'documentAHasLoaded', destinationUrl, [mc.port2, mcYt.port2]);
-
       // Set up our port event listener.
       mc.port1.addEventListener( 'message', function( event ) {
         var li = document.createElement('li')
@@ -55,19 +51,18 @@
       mc.port1.start();
 
       var messageHandler = function( messageEvent ) {
-        if(messageEvent.origin !== destinationUrl) {
-          return;
-        }
-
-        var fakeEvent = MessageChannel.decodeEvent( messageEvent );
-
-        MessageChannel.propagateEvent( fakeEvent );
+        <!-- if(messageEvent.origin !== destinationUrl) { -->
+          <!-- return; -->
+        <!-- } -->
       };
       if( window.addEventListener ) {
         window.addEventListener('message', messageHandler, false);
       } else {
         window.attachEvent('onmessage', messageHandler);
       }
+
+      // Send a port to our parent document.
+      Window.postMessage( window.parent, 'documentAHasLoaded', destinationUrl, [mc.port2, mcYt.port2]);
     }
 
     $(document).ready( loadHandler );
@@ -75,4 +70,3 @@
   <div><ul></ul></div>
 </body>
 </html>
-

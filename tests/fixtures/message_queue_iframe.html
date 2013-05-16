@@ -10,14 +10,13 @@
 <body>
   <script type="text/javascript">
     var destinationUrl = window.location.protocol + "//" + window.location.hostname + ":" + (parseInt(window.location.port) - 1),
-        mc = new MessageChannel(),
         port;
 
     var loadHandler = function(){
       // Define our message handler.
       var messageHandler = function(event){
         if( event.data.initialization ) {
-          port = mc.port1;
+          port = event.ports[0];
 
           port.addEventListener( 'message', function(event) {
             if( event.data.messageToIframe ) {
@@ -25,7 +24,6 @@
             }
           });
           port.start();
-          port.postMessage({initialized: true});
         }
       };
 
@@ -36,7 +34,7 @@
         window.attachEvent('onmessage', messageHandler);
       }
 
-      Window.postMessage( window.parent, { initialization: true } , destinationUrl, [mc.port2]);
+      Window.postMessage( window.parent, { initialization: true } , destinationUrl, []);
     };
 
     $( document ).ready( loadHandler );

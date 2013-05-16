@@ -2,6 +2,7 @@
 <html>
 <head>
   <title>Child iFrame</title>
+  <script src="../../lib/jquery-1.9.1.min.js"></script>
   <script src="../../lib/uuid.core.js"></script>
   <script src="../../lib/kamino.js"></script>
   <script src="../../lib/message_channel.js"></script>
@@ -9,20 +10,22 @@
 <body>
   <script type="text/javascript">
     var loadHandler = function( event ) {
-      window.addEventListener( 'message', function( event ) {
-        var messageEvent = MessageChannel.decodeEvent( event );
-
-        if( messageEvent.data.openCommunication ) {
-          messageEvent.ports[0].postMessage( 'Copy that' );
-        } else {
-          MessageChannel.propagateEvent( messageEvent );
+      var messageHandler = function( event ) {
+        if( event.data.openCommunication ) {
+          event.ports[0].postMessage( 'Copy that' );
         }
-      });
+      };
+
+      if( window.addEventListener ) {
+        window.addEventListener('message', messageHandler, false);
+      } else {
+        window.attachEvent('onmessage', messageHandler);
+      }
 
       Window.postMessage( window.parent, {childFrameLoaded: true}, "*" );
     };
 
-    window.addEventListener('DOMContentLoaded', loadHandler, false);
+    $( document ).ready( loadHandler );
   </script>
   <ul></ul>
 </body>
