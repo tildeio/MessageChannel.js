@@ -64,7 +64,7 @@ test("An iframe can send and receive messages through a fake message port", func
       port.start();
 
       ok(true, "an iframe can communicate through `window.postMessage`");
-      Window.postMessage( parentFrame.contentWindow, { initialization: true }, destinationUrl);
+      Window.postMessage( parentFrame.contentWindow, { initialization: true }, destinationUrl, []);
     }
   };
 
