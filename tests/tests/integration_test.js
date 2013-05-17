@@ -1,6 +1,6 @@
 var messageHandlers = [],
     parentFrame,
-    Window = this.Window;
+    self = this;
 
 var addTrackedEventListener = function( messageHandler ) {
   if( window.addEventListener ) {
@@ -64,7 +64,7 @@ test("An iframe can send and receive messages through a fake message port", func
       port.start();
 
       ok(true, "an iframe can communicate through `window.postMessage`");
-      Window.postMessage( parentFrame.contentWindow, { initialization: true }, destinationUrl, []);
+      this.Window.postMessage( parentFrame.contentWindow, { initialization: true }, destinationUrl, []);
     }
   };
 
@@ -96,7 +96,7 @@ test("Multiple message listeners can be added to a window", function() {
   addTrackedEventListener( messageHandler2 );
 
   stop();
-  Window.postMessage(window, 'test', host);
+  self.Window.postMessage(window, 'test', host, []);
 });
 
 QUnit.module("MessageChannel - event propagation", {
@@ -129,7 +129,7 @@ test("A port can be passed through and still be used to communicate", function()
 
   var messageHandler = function( event ) {
     if( event.data.childFrameLoaded ) {
-      Window.postMessage(parentFrame.contentWindow, {openCommunication: true}, iFrameOrigin, [mc.port2]);
+      this.Window.postMessage(parentFrame.contentWindow, {openCommunication: true}, iFrameOrigin, [mc.port2]);
     }
   };
 
@@ -161,7 +161,7 @@ test("A port is sent with its message queue", function() {
 
   var messageHandler = function( event ) {
     if( event.data.initialization ) {
-      Window.postMessage( parentFrame.contentWindow, {initialization: true}, iFrameOrigin, [mc.port2] );
+      this.Window.postMessage( parentFrame.contentWindow, {initialization: true}, iFrameOrigin, [mc.port2] );
     }
   };
 
