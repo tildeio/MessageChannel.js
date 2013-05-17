@@ -1,13 +1,13 @@
-importScripts('http://localhost:8000/vendor/uuid.core.js');
-importScripts('http://localhost:8000/vendor/kamino.js');
-importScripts('http://localhost:8000/lib/message_channel.js');
+importScripts('/vendor/uuid.core.js');
+importScripts('/vendor/kamino.js');
+importScripts('/lib/message_channel.js');
 
 var mc = new MessageChannel();
 
 mc.port1.addEventListener( 'message', function(event) {
   // A worker can receive messages through a port
   if( event.data.messageToWorker ) {
-    event.ports[0].postMessage({messageFromWorker: true});
+    mc.port1.postMessage({messageFromWorker: true});
   }
 });
 mc.port1.start();
