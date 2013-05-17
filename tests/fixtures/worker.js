@@ -7,7 +7,7 @@ var mc = new MessageChannel();
 mc.port1.addEventListener( 'message', function(event) {
   // A worker can receive messages through a port
   if( event.data.messageToWorker ) {
-    event.ports[0].postMessage({messageFromWorker: true});
+    mc.port1.postMessage({messageFromWorker: true});
   }
 });
 mc.port1.start();
