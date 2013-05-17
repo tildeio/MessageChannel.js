@@ -3,7 +3,7 @@ module.exports = function(grunt) {
   // Most of the time, you will use these.
 
   // By default, (i.e., if you invoke `grunt` without arguments), do
-  // a new build.
+  // start servers for test.
   this.registerTask('default', ['server']);
 
   // Run a server. This is ideal for running the QUnit tests in the browser.
@@ -36,12 +36,20 @@ module.exports = function(grunt) {
     },
 
     watch: {
-      files: ['lib/**', 'vendor/*', 'test/tests/*'],
-      tasks: []
+      files: ['lib/**', 'vendor/*', 'tests/tests/*'],
+      tasks: ['jshint']
+    },
+
+    jshint: {
+      options: {
+        jshintrc: './.jshintrc'
+      },
+      all: ['Gruntfile.js', 'lib/**/*.js', 'tests/tests/**/*.js']
     }
   });
 
   // Load tasks from npm
   grunt.loadNpmTasks('grunt-contrib-connect');
   grunt.loadNpmTasks('grunt-contrib-watch');
+  grunt.loadNpmTasks('grunt-contrib-jshint');
 };
