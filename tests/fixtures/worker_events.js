@@ -1,5 +1,5 @@
-importScripts('http://localhost:8000/lib/uuid.core.js');
-importScripts('http://localhost:8000/lib/kamino.js');
+importScripts('http://localhost:8000/vendor/uuid.core.js');
+importScripts('http://localhost:8000/vendor/kamino.js');
 importScripts('http://localhost:8000/lib/message_channel.js');
 
 this.addEventListener( 'message', function( event ) {
