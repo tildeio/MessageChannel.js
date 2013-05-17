@@ -1,6 +1,6 @@
-importScripts('http://localhost:8000/vendor/uuid.core.js');
-importScripts('http://localhost:8000/vendor/kamino.js');
-importScripts('http://localhost:8000/lib/message_channel.js');
+importScripts('/vendor/uuid.core.js');
+importScripts('/vendor/kamino.js');
+importScripts('/lib/message_channel.js');
 
 this.addEventListener( 'message', function( event ) {
   if( event.data['type'] === 'DocumentHasLoaded' ) {
