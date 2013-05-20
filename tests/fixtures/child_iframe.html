@@ -22,7 +22,7 @@
         window.attachEvent('onmessage', messageHandler);
       }
 
-      Window.postMessage( window.parent, {childFrameLoaded: true}, "*" );
+      Window.postMessage( window.parent, {childFrameLoaded: true}, "*", [] );
     };
 
     $( document ).ready( loadHandler );

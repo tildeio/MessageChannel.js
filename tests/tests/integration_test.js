@@ -1,20 +1,25 @@
 var messageHandlers = [],
     parentFrame,
-    Window = this.Window;
+    self = this;
 
-var removeMessageHandlers = function() {
+var addTrackedEventListener = function( messageHandler ) {
+  if( window.addEventListener ) {
+    window.addEventListener( 'message', messageHandler, false );
+  } else {
+    window.attachEvent( 'onmessage', messageHandler );
+  }
+  messageHandlers.push( messageHandler );
+};
+
+var removeEventListeners = function() {
   var messageHandler;
 
-  if( MessageChannel.reset ) {
-    while( messageHandler = messageHandlers.pop() ) {
-      if( window.removeEventListener ) {
-        window.removeEventListener('message', messageHandler);
-      } else {
-        window.detachEvent('onmessage', messageHandler);
-      }
+  while( messageHandler = messageHandlers.pop() ) {
+    if( window.removeEventListener ) {
+      window.removeEventListener('message', messageHandler);
+    } else {
+      window.detachEvent('onmessage', messageHandler);
     }
-  } else {
-    messageHandlers = [];
   }
 };
 
@@ -30,7 +35,7 @@ QUnit.module("MessageChannel - window", {
       MessageChannel.reset();
     }
     document.body.removeChild( parentFrame );
-    removeMessageHandlers();
+    removeEventListeners();
   }
 });
 
@@ -59,16 +64,11 @@ test("An iframe can send and receive messages through a fake message port", func
       port.start();
 
       ok(true, "an iframe can communicate through `window.postMessage`");
-      Window.postMessage( parentFrame.contentWindow, { initialization: true }, destinationUrl);
+      this.Window.postMessage( parentFrame.contentWindow, { initialization: true }, destinationUrl, []);
     }
   };
 
-  if( window.addEventListener ) {
-    window.addEventListener( 'message', messageHandler, false );
-  } else {
-    window.attachEvent( 'onmessage', messageHandler );
-  }
-  messageHandlers.push( messageHandler );
+  addTrackedEventListener( messageHandler );
 
   stop();
   document.body.appendChild( parentFrame );
@@ -76,7 +76,7 @@ test("An iframe can send and receive messages through a fake message port", func
 
 QUnit.module("window's message event handlers", {
   teardown: function() {
-    removeMessageHandlers();
+    removeEventListeners();
   }
 });
 
@@ -92,25 +92,20 @@ test("Multiple message listeners can be added to a window", function() {
         start();
       };
 
-  if( window.addEventListener ) {
-    window.addEventListener('message', messageHandler1, false);
-    window.addEventListener('message', messageHandler2, false);
-  } else {
-    window.attachEvent('onmessage', messageHandler1);
-    window.attachEvent('onmessage', messageHandler2);
-  }
-  messageHandlers.push( messageHandler1 );
-  messageHandlers.push( messageHandler2 );
+  addTrackedEventListener( messageHandler1 );
+  addTrackedEventListener( messageHandler2 );
 
   stop();
-  Window.postMessage(window, 'test', host);
+  self.Window.postMessage(window, 'test', host, []);
 });
 
 QUnit.module("MessageChannel - event propagation", {
   teardown: function() {
-    MessageChannel.reset();
+    if( MessageChannel.reset ) {
+      MessageChannel.reset();
+    }
     document.body.removeChild( parentFrame );
-    removeMessageHandlers();
+    removeEventListeners();
   }
 });
 
@@ -134,16 +129,11 @@ test("A port can be passed through and still be used to communicate", function()
 
   var messageHandler = function( event ) {
     if( event.data.childFrameLoaded ) {
-      Window.postMessage(parentFrame.contentWindow, {openCommunication: true}, iFrameOrigin, [mc.port2]);
+      this.Window.postMessage(parentFrame.contentWindow, {openCommunication: true}, iFrameOrigin, [mc.port2]);
     }
   };
 
-  if( window.addEventListener ) {
-    window.addEventListener('message', messageHandler);
-  } else {
-    window.attachEvent('onmessage', messageHandler);
-  }
-  messageHandlers.push( messageHandler );
+  addTrackedEventListener( messageHandler );
 
   stop();
   document.body.appendChild( parentFrame );
@@ -171,16 +161,11 @@ test("A port is sent with its message queue", function() {
 
   var messageHandler = function( event ) {
     if( event.data.initialization ) {
-      Window.postMessage( parentFrame.contentWindow, {initialization: true}, iFrameOrigin, [mc.port2] );
+      this.Window.postMessage( parentFrame.contentWindow, {initialization: true}, iFrameOrigin, [mc.port2] );
     }
   };
 
-  if( window.addEventListener ) {
-    window.addEventListener( 'message', messageHandler, false );
-  } else {
-    window.attachEvent( 'onmessage', messageHandler );
-  }
-  messageHandlers.push( messageHandler );
+  addTrackedEventListener( messageHandler );
 
   stop();
   document.body.appendChild( parentFrame );

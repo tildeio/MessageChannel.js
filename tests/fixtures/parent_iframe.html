@@ -20,7 +20,7 @@
     var loadHandler = function( event ) {
       var messageHandler = function( event ) {
         if( event.data.childFrameLoaded ) {
-          Window.postMessage( window.parent, {childFrameLoaded: true}, "*" );
+          Window.postMessage( window.parent, {childFrameLoaded: true}, "*", [] );
         } else if( event.data.openCommunication ) {
           Window.postMessage( childFrame.contentWindow, event.data, iFrameOrigin, event.ports);
         }

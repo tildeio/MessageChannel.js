@@ -15,6 +15,7 @@ module.exports = function(grunt) {
     connect: {
       main: {
         options: {
+          hostname: '*',
           port: 8000,
           base: '.'
         }
@@ -22,6 +23,7 @@ module.exports = function(grunt) {
 
       parentFrame: {
         options: {
+          hostname: '*',
           port: 8001,
           base: '.'
         }
@@ -29,6 +31,7 @@ module.exports = function(grunt) {
 
       childFrame: {
         options: {
+          hostname: '*',
           port: 8002,
           base: '.'
         }
