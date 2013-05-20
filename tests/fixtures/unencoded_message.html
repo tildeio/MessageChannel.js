@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Parent iFrame</title>
+  <script src="/vendor/jquery-1.9.1.min.js"></script>
+</head>
+<body>
+  <script type="text/javascript">
+    var loadHandler = function( event ) {
+      window.parent.postMessage( "unencoded message", "*", [] );
+    };
+
+    $( document ).ready( loadHandler );
+  </script>
+  <ul></ul>
+</body>
+</html>
