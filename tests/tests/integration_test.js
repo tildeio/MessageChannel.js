@@ -1,5 +1,4 @@
 var messageHandlers = [],
-    parentFrame,
     self = this;
 
 var addTrackedEventListener = function( messageHandler ) {
@@ -23,6 +22,13 @@ var removeEventListeners = function() {
   }
 };
 
+var cleanDOM = function() {
+  var iframes = document.getElementsByTagName('iframe');
+  for( var index=0 ; index<iframes.length ; index++) {
+    iframes[index].parentNode.removeChild( iframes[index] );
+  }
+};
+
 QUnit.module("MessageChannel - integration");
 
 test("Assert not file://", function() {
@@ -34,17 +40,18 @@ QUnit.module("MessageChannel - window", {
     if( MessageChannel.reset ) {
       MessageChannel.reset();
     }
-    document.body.removeChild( parentFrame );
+    cleanDOM();
     removeEventListeners();
   }
 });
 
 test("An iframe can send and receive messages through a fake message port", function() {
   expect(3);
-  var destinationUrl = window.location.protocol + "//" + window.location.hostname + ":" + (parseInt(window.location.port, 10) + 1);
+  var destinationUrl = window.location.protocol + "//" + window.location.hostname + ":" + (parseInt(window.location.port, 10) + 1),
+      iFrame;
 
-  parentFrame = document.createElement('iframe');
-  parentFrame.setAttribute('src', destinationUrl + "/tests/fixtures/iframe.html");
+  iFrame = document.createElement('iframe');
+  iFrame .setAttribute('src', destinationUrl + "/tests/fixtures/iframe.html");
 
   var messageHandler = function( event ) {
     var port;
@@ -64,19 +71,20 @@ test("An iframe can send and receive messages through a fake message port", func
       port.start();
 
       ok(true, "an iframe can communicate through `window.postMessage`");
-      this.Window.postMessage( parentFrame.contentWindow, { initialization: true }, destinationUrl, []);
+      this.Window.postMessage( iFrame.contentWindow, { initialization: true }, destinationUrl, []);
     }
   };
 
   addTrackedEventListener( messageHandler );
 
   stop();
-  document.body.appendChild( parentFrame );
+  document.body.appendChild( iFrame );
 });
 
 QUnit.module("window's message event handlers", {
   teardown: function() {
     removeEventListeners();
+    cleanDOM();
   }
 });
 
@@ -99,12 +107,34 @@ test("Multiple message listeners can be added to a window", function() {
   self.Window.postMessage(window, 'test', host, []);
 });
 
+test("A user agent can receive unencoded messages", function() {
+  expect(1);
+  var host = window.location.protocol + "//" + window.location.hostname,
+      iFramePort = parseInt(window.location.port, 10) + 1,
+      iFrameOrigin = host + ':' + iFramePort,
+      iFrameURL = iFrameOrigin + "/tests/fixtures/unencoded_message.html",
+      iFrame;
+
+  iFrame = document.createElement('iframe');
+  iFrame.setAttribute('src', iFrameURL);
+
+  var messageHandler = function( event ) {
+    equal( event.data, "unencoded message", 'An unencoded event can be received');
+    start();
+  };
+
+  addTrackedEventListener( messageHandler );
+
+  stop();
+  document.body.appendChild( iFrame );
+});
+
 QUnit.module("MessageChannel - event propagation", {
   teardown: function() {
     if( MessageChannel.reset ) {
       MessageChannel.reset();
     }
-    document.body.removeChild( parentFrame );
+    cleanDOM();
     removeEventListeners();
   }
 });
@@ -114,10 +144,11 @@ test("A port can be passed through and still be used to communicate", function()
   var host = window.location.protocol + "//" + window.location.hostname,
       iFramePort = parseInt(window.location.port, 10) + 1,
       iFrameOrigin = host + ':' + iFramePort,
-      iFrameURL = iFrameOrigin + "/tests/fixtures/parent_iframe.html";
+      iFrameURL = iFrameOrigin + "/tests/fixtures/parent_iframe.html",
+      iFrame;
 
-  parentFrame = document.createElement('iframe');
-  parentFrame.setAttribute('src', iFrameURL);
+  iFrame = document.createElement('iframe');
+  iFrame.setAttribute('src', iFrameURL);
 
   var mc = new MessageChannel();
 
@@ -129,14 +160,14 @@ test("A port can be passed through and still be used to communicate", function()
 
   var messageHandler = function( event ) {
     if( event.data.childFrameLoaded ) {
-      this.Window.postMessage(parentFrame.contentWindow, {openCommunication: true}, iFrameOrigin, [mc.port2]);
+      this.Window.postMessage(iFrame.contentWindow, {openCommunication: true}, iFrameOrigin, [mc.port2]);
     }
   };
 
   addTrackedEventListener( messageHandler );
 
   stop();
-  document.body.appendChild( parentFrame );
+  document.body.appendChild( iFrame );
 });
 
 test("A port is sent with its message queue", function() {
@@ -145,10 +176,11 @@ test("A port is sent with its message queue", function() {
       iFramePort = parseInt(window.location.port, 10) + 1,
       iFrameOrigin = host + ':' + iFramePort,
       iFrameURL = iFrameOrigin + "/tests/fixtures/message_queue_iframe.html",
+      iFrame,
       mc = new MessageChannel();
 
-  parentFrame = document.createElement('iframe');
-  parentFrame.setAttribute('src', iFrameURL);
+  iFrame = document.createElement('iframe');
+  iFrame.setAttribute('src', iFrameURL);
 
   mc.port1.addEventListener( 'message', function(event) {
     start();
@@ -161,12 +193,12 @@ test("A port is sent with its message queue", function() {
 
   var messageHandler = function( event ) {
     if( event.data.initialization ) {
-      this.Window.postMessage( parentFrame.contentWindow, {initialization: true}, iFrameOrigin, [mc.port2] );
+      this.Window.postMessage( iFrame.contentWindow, {initialization: true}, iFrameOrigin, [mc.port2] );
     }
   };
 
   addTrackedEventListener( messageHandler );
 
   stop();
-  document.body.appendChild( parentFrame );
+  document.body.appendChild( iFrame );
 });
