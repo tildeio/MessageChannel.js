@@ -6,6 +6,9 @@ module.exports = function(grunt) {
   // start servers for test.
   this.registerTask('default', ['server']);
 
+  // Build a new version of the library
+  this.registerTask('build', "Builds a distributable version of MessageChannel.js", ['clean', 'jshint', 'transpile', 'copy']);
+
   // Run a server. This is ideal for running the QUnit tests in the browser.
   this.registerTask('server', ['connect', 'watch']);
 
@@ -38,6 +41,45 @@ module.exports = function(grunt) {
       }
     },
 
+    clean: ['dist'],
+
+    copy: {
+      amd: {
+        files: [
+          {src: ['tmp/amd/message_channel.js'], dest: 'dist/message_channel.amd.js'}
+        ]
+      },
+
+      main: {
+        files: [
+          {src: ['lib/loader.js', 'tmp/browser/message_channel.js'], dest: 'dist/message_channel-<%= pkg.version %>.js'}
+        ]
+      }
+    },
+
+    transpile: {
+      amd: {
+        type: "amd",
+        files: [{
+          expand: true,
+          cwd: 'lib/',
+          src: ['message_channel.js'],
+          dest: 'tmp/amd'
+        }]
+      },
+
+      main: {
+        type: "globals",
+        imports: {},
+        files: [{
+          expand: true,
+          cwd: 'lib/',
+          src: ['message_channel.js'],
+          dest: "tmp/browser"
+        }]
+      }
+    },
+
     watch: {
       files: ['lib/**', 'vendor/*', 'tests/tests/*'],
       tasks: ['jshint']
@@ -52,6 +94,9 @@ module.exports = function(grunt) {
   });
 
   // Load tasks from npm
+  grunt.loadNpmTasks('grunt-contrib-clean');
+  grunt.loadNpmTasks('grunt-contrib-copy');
+  grunt.loadNpmTasks('grunt-es6-module-transpiler');
   grunt.loadNpmTasks('grunt-contrib-connect');
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-contrib-jshint');
