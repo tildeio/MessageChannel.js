@@ -37,6 +37,18 @@ $ npm install
 This will install all of the packages that MessageChannel's Gruntfile relies
 on into the local `node_modules` directory.
 
+### Building
+
+MessageChannel is available as either as an AMD module, or as a more
+traditional distribution that exports the global variable `MessageChannel`.
+To build both versions, run:
+
+```
+grunt build
+```
+
+You can find the built versions of the library in the `dist` directory.
+
 ### Tests
 
 Run the MessageChannel tests by starting a test server:
