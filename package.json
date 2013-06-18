@@ -4,11 +4,11 @@
   "description": "MessageChannel.js is a library to polyfill the channel messaging, a method for having two-way communication between browsing contexts",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "grunt test"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/tildeio/message_channel.js.git"
+    "url": "https://github.com/tildeio/MessageChannel.js.git"
   },
   "author": "Tilde, Inc.",
   "license": "BSD",
@@ -17,7 +17,8 @@
     "grunt": "~0.4.0",
     "grunt-contrib-connect": "~0.3.0",
     "grunt-contrib-watch": "~0.2.0",
-    "grunt-contrib-jshint": "~0.4.3",
+    "grunt-contrib-jshint": "~0.6.0",
+    "grunt-saucelabs": "~4.0.4",
     "gfms": "~0.0.7"
   }
 }
