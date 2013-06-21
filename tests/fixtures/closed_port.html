@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Child iFrame</title>
+  <script src="/vendor/jquery-1.9.1.min.js"></script>
+  <script src="/vendor/uuid.core.js"></script>
+  <script src="/vendor/kamino.js"></script>
+  <script src="/lib/message_channel.js"></script>
+</head>
+<body>
+  <script type="text/javascript">
+    var destinationUrl = window.location.protocol + "//" + window.location.hostname + ":" + (parseInt(window.location.port, 10) - 1),
+        mc = new MessageChannel();
+
+    var loadHandler = function( event ) {
+      var messageHandler = function( event ) {
+        if( event.data.openCommunication ) {
+          mc.port1.postMessage( {portMessage: true} );
+          setTimeout( function() {
+            Window.postMessage(
+              window.parent,
+              {closedPort: true},
+              destinationUrl,
+              [])
+          });
+        }
+      };
+
+      if(window.addEventListener) {
+        window.addEventListener('message', messageHandler);
+      } else {
+        window.attachEvent('onmessage', messageHandler);
+      }
+
+      Window.postMessage(
+        window.parent,
+        {childFrameLoaded: true},
+        destinationUrl,
+        [mc.port2]
+      );
+    };
+
+    $( document ).ready( loadHandler );
+  </script>
+</body>
+</html>
