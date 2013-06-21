@@ -225,3 +225,46 @@ test("A port is sent with its message queue", function() {
   stop();
   document.body.appendChild( iFrame );
 });
+
+QUnit.module("MessageChannel - MessagePort", {
+  teardown: function() {
+    if( MessageChannel.reset ) {
+      MessageChannel.reset();
+    }
+    cleanDOM();
+    removeEventListeners();
+  }
+});
+
+test("A closed port doesn't call the associated callbacks", function() {
+  expect(1);
+  var host = window.location.protocol + "//" + window.location.hostname,
+      iFramePort = parseInt(window.location.port, 10) + 1,
+      iFrameOrigin = host + ':' + iFramePort,
+      iFrameURL = iFrameOrigin + "/tests/fixtures/closed_port.html",
+      iFrame;
+
+  iFrame = document.createElement('iframe');
+  iFrame.setAttribute('src', iFrameURL);
+
+  var messageHandler = function( event ) {
+    if( event.data.childFrameLoaded ) {
+      var port = event.ports[0];
+      port.addEventListener( 'message', function(event) {
+        ok(false, "A closed port doesn't receive messages");
+      });
+      port.start();
+
+      port.close();
+      Window.postMessage(iFrame.contentWindow, { openCommunication: true }, iFrameOrigin);
+    } else if ( event.data.closedPort ) {
+      ok(true);
+      start();
+    }
+  };
+
+  addTrackedEventListener( messageHandler );
+
+  stop();
+  document.body.appendChild( iFrame );
+});
