@@ -1,24 +1,33 @@
 var messageHandlers = [],
     self = this;
 
-var addTrackedEventListener = function( messageHandler ) {
+var _addEventListener = function( messageHandler ) {
   if( window.addEventListener ) {
     window.addEventListener( 'message', messageHandler, false );
   } else {
     window.attachEvent( 'onmessage', messageHandler );
   }
+};
+
+var addTrackedEventListener = function( messageHandler ) {
+  _addEventListener( messageHandler );
   messageHandlers.push( messageHandler );
+};
+
+
+var _removeEventListener = function( messageHandler) {
+  if( window.removeEventListener ) {
+    window.removeEventListener('message', messageHandler);
+  } else {
+    window.detachEvent('onmessage', messageHandler);
+  }
 };
 
 var removeEventListeners = function() {
   var messageHandler;
 
   while( messageHandler = messageHandlers.pop() ) {
-    if( window.removeEventListener ) {
-      window.removeEventListener('message', messageHandler);
-    } else {
-      window.detachEvent('onmessage', messageHandler);
-    }
+    _removeEventListener( messageHandler );
   }
 };
 
@@ -105,6 +114,20 @@ test("Multiple message listeners can be added to a window", function() {
 
   stop();
   self.Window.postMessage(window, 'test', host, []);
+});
+
+test("A message handler can be removed more than once", function() {
+  expect(0);
+
+  var host = window.location.protocol + "//" + window.location.host,
+      messageHandler = function(event) {
+        equal( event.data, 'test', "The handler is called");
+      };
+
+  _addEventListener( messageHandler );
+
+  _removeEventListener( messageHandler );
+  _removeEventListener( messageHandler );
 });
 
 test("A user agent can receive unencoded messages", function() {
