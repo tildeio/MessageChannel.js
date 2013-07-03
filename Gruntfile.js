@@ -43,27 +43,26 @@ module.exports = function(grunt) {
     pkg: grunt.file.readJSON('package.json'),
 
     connect: {
+      options: {
+        hostname: '*',
+        base: '.'
+      },
+
       main: {
         options: {
-          hostname: '*',
-          port: 8000,
-          base: '.'
+          port: 8000
         }
       },
 
       parentFrame: {
         options: {
-          hostname: '*',
-          port: 8001,
-          base: '.'
+          port: 8001
         }
       },
 
       childFrame: {
         options: {
-          hostname: '*',
-          port: 8003,
-          base: '.'
+          port: 8003
         }
       }
     },
