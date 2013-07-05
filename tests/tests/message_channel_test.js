@@ -1,5 +1,5 @@
 if( MessageChannel && MessageChannel.reset ) {
-  var originalPostMessage;
+  var originalPostMessage, kaminoStringify, kaminoParse;
 
   QUnit.module("MessageChannel", {
     teardown: function() {
@@ -17,9 +17,13 @@ if( MessageChannel && MessageChannel.reset ) {
   QUnit.module("MessagePort", {
     setup: function() {
       originalPostMessage = window.postMessage;
+      kaminoStringify = Kamino.stringify;
+      kaminoParse = Kamino.parse;
     },
 
     teardown: function() {
+      Kamino.stringify = kaminoStringify;
+      Kamino.parse = kaminoParse;
       MessageChannel.reset();
       window.postMessage = originalPostMessage;
     }
@@ -101,43 +105,41 @@ if( MessageChannel && MessageChannel.reset ) {
 
   test("When the port is entangled to a port sent to another user agent, stringified data is sent to the entangled port", function() {
     expect(2);
-    var mp1 = MessageChannel._createPort(),
-        mp2 = MessageChannel._createPort('myUuid'),
-        kaminoStringify = Kamino.stringify;
+    var mc = new MessageChannel(),
+        origin = window.location.protocol + "//" + window.location.host;
 
-    mp1._entangledPortUuid = mp2.uuid;
-    mp1._currentTarget = window;
-    mp1.destinationUrl = "http://itworksforme";
+    stop();
+
+    mc.port1._currentTarget = window;
+    mc.port1.destinationUrl = origin;
 
     Kamino.stringify = function() {
-      return 'an encoded string';
+      var args = Array.prototype.slice.apply(arguments),
+          source = args[0];
+      equal( source.event.data, "Sad things are sad", "The message is encoded using Kamino");
+      return kaminoStringify.apply( null, args );
     };
 
-    window.postMessage = function( message, targetOrigin) {
-      equal(message, "an encoded string", "The message is encoded");
-      equal(targetOrigin, "http://itworksforme", "The message is sent to the right url");
+    Kamino.parse = function(source) {
+      ok(true, "The message is decoded using Kamino");
+      start();
+      return {event: {}};
     };
-    mp1.postMessage( 'Sad things are sad' );
+    mc.port2.start();
 
-    Kamino.stringify = kaminoStringify;
+    mc.port1.postMessage( "Sad things are sad" );
   });
 
   test("When the port is entangled to a port sent to another user agent, the current target is preserved", function() {
-    expect(2);
-    var mp1 = MessageChannel._createPort(),
-        mp2 = MessageChannel._createPort('myUuid');
+    expect(1);
+    var mc = new MessageChannel(),
+        origin = window.location.protocol + "//" + window.location.host;
 
-    mp1._entangledPortUuid = mp2.uuid;
-    mp1._currentTarget = window;
-    mp1.destinationUrl = "http://itworksforme";
-    mp2._currentTarget = window;
+    mc.port2._currentTarget = window;
 
-    window.postMessage = function( message, targetOrigin) {
-      ok(true, "the message is sent");
-    };
-    mp1.postMessage( 'Sad things are sad' );
+    mc.port1.postMessage( 'Sad things are sad' );
 
-    deepEqual(mp2._currentTarget, window, "Current target is not modified");
+    equal(mc.port2._currentTarget, window, "Current target is not modified");
   });
 
   test("When the port is entangled to a port not sent to another user agent, stringified data is queued to the entangled port", function() {
