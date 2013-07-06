@@ -1,5 +1,7 @@
 # MessageChannel.js
 
+[![Build Status](https://secure.travis-ci.org/tildeio/MessageChannel.js.png?branch=master)](http://travis-ci.org/tildeio/MessageChannel.js)
+
 MessageChannel.js proposes an implementation of the [_channel messaging_ described in the
 HTML5
 specification](http://www.w3.org/TR/webmessaging/#channel-messaging).
