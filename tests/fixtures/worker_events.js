@@ -1,4 +1,4 @@
-importScripts('/vendor/uuid.core.js');
+importScripts('/vendor/node-uuid.js');
 importScripts('/vendor/kamino.js');
 importScripts('/lib/message_channel.js');
 
