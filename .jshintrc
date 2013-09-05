@@ -4,6 +4,7 @@
         "console",
         "QUnit",
         "$",
+        "_",
         "Metamorph",
         "Kamino",
         "UUID",
