@@ -1,4 +1,4 @@
-if( this.Worker ) {
+if( _.isFunction( this.Worker ) ) {
   QUnit.module("MessageChannel - web worker", {
     teardown: function() {
       if( MessageChannel.reset ) {
