@@ -1,0 +1,26 @@
+{
+  "name": "MessageChannel.js",
+  "version": "0.1.0",
+  "homepage": "https://github.com/tildeio/MessageChannel.js",
+  "authors": [
+    "Cyril Fluck <cyril@fluck.fr>"
+  ],
+  "description": "MessageChannel.js is a library for (nearly) polyfilling MessageChannel, an HTML5 feature for two-way communication between browser contexts.",
+  "main": "lib/message_channel.js",
+  "keywords": [
+    "postMessage",
+    "MessageChannel"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "UUID.js": "https://github.com/LiosK/UUID.js.git#2fe182e3166f9a279738568a75177011f26aa008",
+    "kamino.js": "v0.0.2"
+  }
+}

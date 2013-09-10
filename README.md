@@ -11,6 +11,16 @@ specification](http://www.w3.org/TR/webmessaging/#channel-messaging).
 It is important to note that **the MessageChannel.js communication can only work
 with browser that supports `window.postMessage`.**
 
+## Installation
+
+`MessageChannel.js` depends on UUID.js and Kamino.js.  The easiest way to get
+them is to install `MessageChannel` via [bower][].  They will then wind up in
+`bower_components`.
+
+```sh
+bower install MessageChannel.js
+```
+
 ## Usage
 
 The library works almost like a polyfill.
@@ -79,3 +89,6 @@ grunt server
 
 Once the server is running, visit `http://localhost:8000/test/` in your
 browser.
+
+
+[bower]: https://github.com/bower/bower

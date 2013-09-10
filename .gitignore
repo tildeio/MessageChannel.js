@@ -1,3 +1,4 @@
 node_modules
 tmp/
 /sauce_connect.*
+bower_components
