@@ -227,6 +227,48 @@ test("A port is sent with its message queue", function() {
   document.body.appendChild( iFrame );
 });
 
+test("Multiple ports can be transferred with their message queues", function() {
+  expect(2);
+
+  var host = window.location.protocol + "//" + window.location.hostname,
+      iFramePort = parseInt(window.location.port, 10) + 1,
+      iFrameOrigin = host + ':' + iFramePort,
+      iFrameURL = iFrameOrigin + "/tests/fixtures/message_queue_iframe.html",
+      iFrame,
+      mc = new MessageChannel(),
+      mc2 = new MessageChannel();
+
+  iFrame = document.createElement('iframe');
+  iFrame.setAttribute('src', iFrameURL);
+
+  mc.port1.addEventListener( 'message', function(event) {
+    start();
+    equal(event.data.messageFromIframe, true, "The message was received by the port");
+  });
+  mc2.port1.addEventListener( 'message', function(event) {
+    start();
+    equal(event.data.messageFromIframe, true, "The message was received by the port");
+  });
+
+  //Enqueue a message before sending the port
+  mc.port1.postMessage({messageToIframe: true});
+  mc2.port1.postMessage({messageToIframe: true});
+
+  mc.port1.start();
+  mc2.port1.start();
+
+  var messageHandler = function( event ) {
+    if( event.data.initialization ) {
+      this.Window.postMessage( iFrame.contentWindow, {initialization: true}, iFrameOrigin, [mc.port2, mc2.port2] );
+    }
+  };
+
+  addTrackedEventListener( messageHandler );
+
+  stop();
+  document.body.appendChild( iFrame );
+});
+
 QUnit.module("MessageChannel - MessagePort", {
   teardown: function() {
     if( MessageChannel.reset ) {

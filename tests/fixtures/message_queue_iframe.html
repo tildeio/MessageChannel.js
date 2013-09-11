@@ -16,14 +16,15 @@
       // Define our message handler.
       var messageHandler = function(event){
         if( event.data.initialization ) {
-          port = event.ports[0];
-
-          port.addEventListener( 'message', function(event) {
-            if( event.data.messageToIframe ) {
-              port.postMessage({messageFromIframe: true});
-            }
-          });
-          port.start();
+          for (var port, i = 0; i < event.ports.length; ++i) {
+            port = event.ports[i];
+            port.addEventListener( 'message', function(event) {
+              if( event.data.messageToIframe ) {
+                port.postMessage({messageFromIframe: true});
+              }
+            });
+            port.start();
+          }
         }
       };
 
