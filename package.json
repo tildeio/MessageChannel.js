@@ -1,6 +1,6 @@
 {
   "name": "message_channel.js",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "MessageChannel.js is a library to polyfill the channel messaging, a method for having two-way communication between browsing contexts",
   "main": "index.js",
   "scripts": {
