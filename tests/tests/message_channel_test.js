@@ -142,22 +142,27 @@ if( MessageChannel && MessageChannel.reset ) {
     equal(mc.port2._currentTarget, window, "Current target is not modified");
   });
 
-  test("Messages can be passed between entangled, non-transferred ports", function() {
-    stop();
-    expect(1);
+  test("When the port is entangled to a port not sent to another user agent, stringified data is queued to the entangled port", function() {
+    expect(3);
+    var mp1 = MessageChannel._createPort(),
+        mp2 = MessageChannel._createPort('myUuid'),
+        kaminoStringify = Kamino.stringify;
 
-    var mc = new MessageChannel(),
-        port1 = mc.port1,
-        port2 = mc.port2;
+    mp1._entangledPortUuid = mp2.uuid;
 
-    port2.addEventListener('message', function (event) {
-      start();
-      equal(event.data, 'test message', "message received");
-    });
+    Kamino.stringify = function() {
+      return 'an encoded string';
+    };
 
-    port1.start();
-    port2.start();
-    port1.postMessage('test message');
+    window.postMessage = function( message, targetOrigin) {
+      ok(false, "The message should not be sent");
+    };
+    equal(mp2._messageQueue.length, 0, "The message queue is initially empty");
+    mp1.postMessage( 'Sad things are sad' );
+    equal(mp2._messageQueue.length, 1, "The event is queued");
+    equal(mp2._messageQueue[0], "an encoded string", "The queued event is encoded");
+
+    Kamino.stringify = kaminoStringify;
   });
 
   QUnit.module("MessagePort - EventTarget", {
