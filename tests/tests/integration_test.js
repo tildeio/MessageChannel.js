@@ -56,7 +56,7 @@ QUnit.module("MessageChannel - window", {
 });
 
 test("An iframe can send and receive messages through a fake message port", function() {
-  expect(3);
+  expect(4);
   var destinationUrl = window.location.protocol + "//" + window.location.hostname + ":" + (parseInt(window.location.port, 10) + 1),
       iFrame;
 
@@ -66,6 +66,9 @@ test("An iframe can send and receive messages through a fake message port", func
   var messageHandler = function( event ) {
     var port;
 
+    // Qunit raises an exception when using `equal`
+    // (it tries to access `setInterval` on the iframe)
+    ok(event.source === iFrame.contentWindow, "The event comes from the iframe");
     if( event.data.initialization ) {
       port = event.ports[0];
 
