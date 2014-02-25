@@ -117,7 +117,7 @@ test("Multiple message listeners can be added to a window", function() {
   addTrackedEventListener( messageHandler2 );
 
   stop();
-  self.Window.postMessage(window, 'test', host, []);
+  window.postMessage('test', host, []);
 });
 
 test("A message handler can be removed more than once", function() {
