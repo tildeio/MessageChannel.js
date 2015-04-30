@@ -156,6 +156,28 @@ test("A user agent can receive unencoded messages", function() {
   document.body.appendChild( iFrame );
 });
 
+test("A user agent can receive a parseable object with no event field", function() {
+  expect(1);
+  var host = window.location.protocol + "//" + window.location.hostname,
+      iFramePort = parseInt(window.location.port, 10) + 1,
+      iFrameOrigin = host + ':' + iFramePort,
+      iFrameURL = iFrameOrigin + "/tests/fixtures/differently_encoded_message.html",
+      iFrame;
+
+  iFrame = document.createElement('iframe');
+  iFrame.setAttribute('src', iFrameURL);
+
+  var messageHandler = function( event ) {
+    equal( event.data, '{"look_ma":"no event field"}', 'An encoded event by another library can be received');
+    start();
+  };
+
+  addTrackedEventListener( messageHandler );
+
+  stop();
+  document.body.appendChild( iFrame );
+});
+
 QUnit.module("MessageChannel - event propagation", {
   teardown: function() {
     if( MessageChannel.reset ) {
