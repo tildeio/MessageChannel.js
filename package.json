@@ -23,6 +23,6 @@
     "gfms": "~0.0.7"
   },
   "dependencies": {
-    "bower": "~1.2.6"
+    "bower": "~1.4.1"
   }
 }
